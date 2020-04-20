@@ -71,11 +71,11 @@ class ReleaseManager {
      * @param usePrefix - if the semver prefix is not null, use it as the artifact name. Otherwise, use the repo name.
      * @return
      */
-    String artifactName() {
+    private Semver artifact() {
         def semver = Semver.fromRef(semanticVersion())
-        
+
         if (isMasterBranch()) {
-            return semver.toString()
+            return semver
         } else if (!isReleaseBranch(script.env.BRANCH_NAME)) {
             semver.bumpMinor()
             semver.prerelease = "${script.env.BUILD_NUMBER}-${script.env.BRANCH_NAME}-SNAPSHOT"
@@ -83,14 +83,22 @@ class ReleaseManager {
             semver = Semver.fromRef(script.env.BRANCH_NAME)
             semver.prerelease = "SNAPSHOT"
         }
-        
+
 //        println "semver.prefix=${semver.prefix}"
         if (!semver.prefix) semver.prefix = script.env.JOB_NAME
         semver.v = null // don't add "v" to artifact name
 //        println "artifactName-> ${script.env}"
-//        println "semver-> ${semver.toMap()}"
+        println "semver-> ${semver.toMap()}"
 
-        return semver.toString()
+        return semver
+    }
+
+    String artifactName() {
+        return artifact().artifactName()
+    }
+
+    String artifactVersion() {
+        return artifact().versionString()
     }
 
 }

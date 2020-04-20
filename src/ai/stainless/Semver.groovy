@@ -85,7 +85,8 @@ class Semver {
     }
 
     String fullPrefix() {
-        if (prefix) return "$prefix$prefixDelim"
+        if (prefix && v && v=='v') return "$prefix$prefixDelim"
+        else if (prefix) return "$prefix"
         return ''
     }
 
@@ -96,6 +97,14 @@ class Semver {
 
     String toString() {
         return "${this.fullPrefix()}${v?:''}$major.$minor.$patch${this.fullPreRelease()}"
+    }
+
+    String artifactName() {
+        return "${this.fullPrefix()}-$major.$minor.$patch${this.fullPreRelease()}"
+    }
+
+    String versionString() {
+        return "$major.$minor.$patch${this.fullPreRelease()}"
     }
 
     Map toMap() {
