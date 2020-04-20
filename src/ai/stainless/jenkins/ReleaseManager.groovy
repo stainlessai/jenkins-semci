@@ -39,11 +39,10 @@ class ReleaseManager {
      * Returns the latest semantic version according to the tag history in the underlying repository
      * @return
      */
-    Semver semanticVersion() {
+    String semanticVersion() {
         // parse latest tag
         def tags = this.script.sh(script: "git for-each-ref --sort=creatordate --format '%(refname)' refs/tags", returnStdout: true).readLines()
-        println "tags: $tags"
-        return tags.collect { Semver.fromRef(it.replaceAll('\'',''),true) }.last()
+        return tags.collect { Semver.fromRef(it.replaceAll('\'',''),true) }.last()?.toString()
     }
 
 }
