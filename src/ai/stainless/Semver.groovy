@@ -16,6 +16,25 @@ class Semver {
     int patch
     def prerelease
 
+    static def nullIfEmpty(string) {
+        if (!string || string.length()==0) return null
+        string
+    }
+
+    void bumpPatch() {
+        patch++
+    }
+
+    void bumpMinor() {
+        minor++
+        patch = 0
+    }
+
+    void bumpMajor() {
+        major++
+        minor = patch = 0
+    }
+
     /**
      * Return a semantic version from a branch string which may include a remote identifier, e.g. "origin/"
      * @param branch
@@ -29,13 +48,14 @@ class Semver {
 //                println "$it": matcher.group(it)
 //            }
 
-            def delim = matcher.group(4)
-            def prefix =matcher.group(2)
+            def delim = matcher.group(4)?nullIfEmpty(matcher.group(4)):null
+            def prefix = matcher.group(2)?nullIfEmpty(matcher.group(2)):null
 
             // crop off training '-' if delimiter=='v', should be able to do this with regex tbh
-            if (delim=='v' && prefix.endsWith('-')) prefix = prefix[0..prefix.length()-2]
+            if (delim?.equalsIgnoreCase('v') && prefix?.endsWith('-')) prefix = prefix[0..prefix.length()-2]
 
             return new Semver(prefix:prefix,
+                    v: delim,
                     major:matcher.group(5) as int,
                     minor: matcher.group(6) as int,
                     patch: matcher.group(7) as int,
@@ -79,7 +99,7 @@ class Semver {
     }
 
     Map toMap() {
-        this.properties.subMap(['path','prefix','major','minor','patch','prerelease'])
+        this.properties.subMap(['path','prefix','v','major','minor','patch','prerelease'])
     }
 
 }

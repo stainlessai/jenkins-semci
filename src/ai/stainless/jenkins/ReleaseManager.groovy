@@ -23,7 +23,7 @@ class ReleaseManager {
     }
 
     String shortCommit() {
-        trimOutput("git log -n 1 --pretty=format:'%h'", maxLength: 7)
+        trimOutput("git log -n 1 --pretty=format:'%h'",7)
     }
 
     private String trimOutput(String script, int maxLength) {
@@ -42,8 +42,56 @@ class ReleaseManager {
     String semanticVersion() {
         // parse latest tag
         def tags = this.script.sh(script: "git for-each-ref --sort=creatordate --format '%(refname)' refs/tags", returnStdout: true).readLines()
-        return tags.collect { Semver.fromRef(it.replaceAll('\'',''),true) }.last()?.toString()
+        return tags.collect { Semver.fromRef(it.replaceAll('\'', ''), true) }.last()?.toString()  // must return String
+    }
+
+    /**
+     * Parse a branch ref of the form ((pathElement/)*branchName).
+     * If branchName is a valid semantic version (with optional prefix) this branch is considered a release branch
+     * @param branchName
+     * @return
+     */
+    boolean isReleaseBranch(String branchName) {
+        try {
+            def semver = Semver.fromRef(branchName)
+//            println "isReleaseBranch($branchName)-> ${semver.toMap()}"
+            if (semver.v) return true
+            // is a valid semantic version starting with 'v' or '@'
+        } catch (Throwable t) {
+            return false
+        }
+
+        return false
+    }
+
+    /**
+     * Construct an artifact name from the branchName, build number, and tag history of the repo.
+     * @param branchName
+     * @param buildNumber
+     * @param usePrefix - if the semver prefix is not null, use it as the artifact name. Otherwise, use the repo name.
+     * @return
+     */
+    String artifactName() {
+        def semver = Semver.fromRef(semanticVersion())
+        
+        if (isMasterBranch()) {
+            return semver.toString()
+        } else if (!isReleaseBranch(script.env.BRANCH_NAME)) {
+            semver.bumpMinor()
+            semver.prerelease = "${script.env.BUILD_NUMBER}-${script.env.BRANCH_NAME}-SNAPSHOT"
+        } else {
+            semver = Semver.fromRef(script.env.BRANCH_NAME)
+            semver.prerelease = "SNAPSHOT"
+        }
+        
+//        println "semver.prefix=${semver.prefix}"
+        if (!semver.prefix) semver.prefix = script.env.JOB_NAME
+        semver.v = null // don't add "v" to artifact name
+//        println "artifactName-> ${script.env}"
+//        println "semver-> ${semver.toMap()}"
+
+        return semver.toString()
+
     }
 
 }
-
