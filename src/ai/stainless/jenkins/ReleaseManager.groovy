@@ -41,8 +41,9 @@ class ReleaseManager {
      */
     Semver semanticVersion() {
         // parse latest tag
-        this.script.sh(script: "git for-each-ref --sort=creatordate --format '%(refname)' refs/tags", returnStdout: true)
-                .lines().collect { Semver.fromRef(it.replaceAll('\'',''),true) }.last()
+        def tags = this.script.sh(script: "git for-each-ref --sort=creatordate --format '%(refname)' refs/tags", returnStdout: true).readLines()
+        println "tags: $tags"
+        return tags.collect { Semver.fromRef(it.replaceAll('\'',''),true) }.last()
     }
 
 }

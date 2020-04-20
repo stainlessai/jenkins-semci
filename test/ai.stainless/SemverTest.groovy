@@ -29,14 +29,14 @@ test("refs/tags/v0.0.1")
 //def result = out.toString()
 //println result
 
+println "---"
 def cmd = "git for-each-ref --sort=creatordate --format '%(refname)' refs/tags".execute()
 def out = new StringBuffer()
 def err = new StringBuffer()
 cmd.consumeProcessOutput( out, err )
 cmd.waitFor()
-def result = out.toString()
-println result
-println result.lines().collect { Semver.fromRef(it.replaceAll('\'',''),true) }.last().toMap()
+def lines = out.readLines()
+println lines.collect { Semver.fromRef(it.replaceAll('\'',''),true) }.last().toMap()
 
 
 //try {
