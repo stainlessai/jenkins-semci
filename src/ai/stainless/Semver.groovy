@@ -107,6 +107,7 @@ class Semver {
         return "$major.$minor.$patch${this.fullPreRelease()}"
     }
 
+    // Use of this method will be rejected by Jenkins' Groovy sandbox
     Map toMap() {
         this.properties.subMap(['path','prefix','v','major','minor','patch','prerelease'])
     }

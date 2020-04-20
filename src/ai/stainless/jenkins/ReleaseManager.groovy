@@ -88,7 +88,7 @@ class ReleaseManager {
         if (!semver.prefix) semver.prefix = script.env.JOB_NAME
         semver.v = null // don't add "v" to artifact name
 //        println "artifactName-> ${script.env}"
-        println "semver-> ${semver.toMap()}"
+//        println "semver-> ${semver.toMap()}"
 
         return semver
     }
