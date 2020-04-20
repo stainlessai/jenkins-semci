@@ -51,7 +51,7 @@ class Semver {
             def delim = matcher.group(4)?nullIfEmpty(matcher.group(4)):null
             def prefix = matcher.group(2)?nullIfEmpty(matcher.group(2)):null
 
-            // crop off training '-' if delimiter=='v', should be able to do this with regex tbh
+            // crop off trailing '-' if delimiter=='v', should be able to do this with regex tbh
             if (delim?.equalsIgnoreCase('v') && prefix?.endsWith('-')) prefix = prefix[0..prefix.length()-2]
 
             return new Semver(prefix:prefix,

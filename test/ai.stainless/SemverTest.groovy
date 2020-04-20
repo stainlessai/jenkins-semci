@@ -59,6 +59,7 @@ println new ReleaseManager(new TestScript(BUILD_NUMBER:"18",JOB_NAME:"jobby",BRA
 println new ReleaseManager(new TestScript(BUILD_NUMBER:"256",JOB_NAME:"jobby",BRANCH_NAME:"develop")).artifactName()
 println new ReleaseManager(new TestScript(BUILD_NUMBER:"512",JOB_NAME:"jobby",BRANCH_NAME:"v1.2.3")).artifactName()
 println new ReleaseManager(new TestScript(BUILD_NUMBER:"1024",JOB_NAME:"jobby",BRANCH_NAME:"jobbyjob-v4.5.6")).artifactName()
+println new ReleaseManager(new TestScript(BUILD_NUMBER:"1024",JOB_NAME:"jobby",BRANCH_NAME:"jobbyjob@4.5.6")).artifactName()
 
 //try {
 //    println Semver.fromBranch("origin/kallisto-admin-v1.2")

@@ -91,7 +91,6 @@ class ReleaseManager {
 //        println "semver-> ${semver.toMap()}"
 
         return semver.toString()
-
     }
 
 }
