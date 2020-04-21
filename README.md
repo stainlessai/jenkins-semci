@@ -80,8 +80,31 @@ Methods:
 A class that can be imported into a Jenkins pipeline. Due to Jenkins Groovy sandbox restrictions, Semver objects are difficult
 to use directly in the pipeline so this class returns `String` objects.
 
-The ReleaseManager uses GitHub branch and tag data to determine what the version of the build is. 
+The ReleaseManager uses GitHub branch and tag data to determine what the version of the build is. For a detailed explanation
+of the CI/CD rules that inspired these tools, see [CI/CD Pipeline (PROPOSED)](https://stainlesscode.atlassian.net/wiki/spaces/STAT/pages/560922625/CI+CD+Pipeline+PROPOSED)
 
+You can pass the values returned by these methods into your build script to set the filename, for example:
+
+```$bash 
+pipeline {
+  steps {
+    step {
+      sh "./myscript --artifactName=${releaseManager.artifactName()} --version=${releaseManager.artifactVersion()}"
+    }
+  }
+}
+```
+
+The release manager will examine the build properties, git repo branch and tags and return the expected artifact name and version. 
+For example, if we are working in a repo called "example" with a Jenkins job of "example":
+
+| Branch | Last Tag | artifactName() | artifactVersion() |
+|---|---|---|---|
+| master | (none) | example-0.0.1 | 0.0.1 | 
+| develop | (none) | example-develop-0.0.1-SNAPSHOT | 0.0.1-develop-SNAPSHOT |
+| master | v1.2.3 | example-1.2.3 | 1.2.3 |
+| master | myprefix@1.2.3 | myprefix-1.2.3 | 1.2.3 |
+| develop | myprefix-v1.2.3 | myprefix-1.2.3-develop-SNAPSHOT | 1.2.3-develop-SNAPSHPT
 
 Methods:
 ```$groovy
@@ -89,6 +112,4 @@ Methods:
     String semanticVersion()     // Returns the latest semantic version according to the tag history in the underlying repository
     String artifactName()        // Returns the artifact name. Uses the semver prefix if exists, otherwise, the Jenkins JOB_NAME
     String artifactVersion()     // Returns the latest artifact version according to the GitHub branch and tag data
-}
-
 ```
