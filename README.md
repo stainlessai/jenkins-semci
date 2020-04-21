@@ -107,7 +107,7 @@ For example, if we are working in a repo called "example" with a Jenkins job of 
 | develop | myprefix-v1.2.3 | myprefix-v1.2.3 | myprefix-1.2.3-develop-SNAPSHOT | 1.2.3-develop-SNAPSHOT
 | v2.0.0 | v1.9.5 | 2.0.0 | example-2.0.0 | 2.0.0 |
 | origin/myprefix@2.0.0 | myprefix@2.0.6 | myprefix@2.0.6 | myprefix-2.0.6 | 2.0.6 |
-| origin/myprefix@2.1.0 | myprefix@2.1.0 | myprefix@2.1.0 | myprefix-2.1.0 | 2.1.0 |
+| origin/myprefix@2.1.0 | myprefix@2.0.6 | myprefix@2.1.0 | myprefix-2.1.0 | 2.1.0 |
 | origin/myprefix@2.0.1 | Invalid: branch names must use semver patch .0 | Invalid | Invalid |
 
 Methods:
