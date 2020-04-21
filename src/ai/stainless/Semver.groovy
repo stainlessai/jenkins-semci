@@ -3,7 +3,7 @@ package ai.stainless
 /**
  * Semantic version class that supports a prefix
  */
-class Semver {
+class Semver implements Comparable<Semver> {
 
     static def REGEX = ~/(((.*)?)?-?(v|@))?(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?(-(.*))?/
     def path
@@ -112,4 +112,8 @@ class Semver {
         this.properties.subMap(['path','prefix','v','major','minor','patch','prerelease'])
     }
 
+    @Override
+    int compareTo(Semver o) {
+        return ((this.major - o.major) * 100) + ((this.minor - o.minor) * 10) + this.patch - o.patch
+    }
 }
