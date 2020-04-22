@@ -45,8 +45,8 @@ class ReleaseManager {
      */
     String semanticVersion(boolean allowNonZeroPatchBranches = false) {
         // parse latest tag
-        if (tags.readLines().empty) throw new IllegalArgumentException("Can't determine semantic version: no tags")
-        def tagSemver = tags.readLines().collect { Semver.fromRef(it.replaceAll('\'', ''), true) }.last()
+        if (getTags().readLines().empty) throw new IllegalArgumentException("Can't determine semantic version: no tags")
+        def tagSemver = getTags().readLines().collect { Semver.fromRef(it.replaceAll('\'', ''), true) }.last()
         def branchSemver = Semver.fromRef(script.env.BRANCH_NAME, true)
         if (!allowNonZeroPatchBranches && branchSemver > tagSemver && branchSemver.patch > 0)
             throw new IllegalArgumentException("Invalid patch version in branch: ${script.env.BRANCH_NAME} (patch must be zero)")
