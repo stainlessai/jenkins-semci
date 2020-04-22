@@ -80,7 +80,10 @@ class Semver implements Comparable<Semver> {
         } // branch can start with a path
 
         def semver = Semver.parse(ref, ignoreErrors)
-        if (semver) semver.setPath(path)
+        if (!semver) {
+            semver = new Semver()
+        }
+        semver.setPath(path)
         return semver
     }
 

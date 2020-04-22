@@ -50,3 +50,7 @@ assert new Semver(major: 0, minor: 0, patch: 1).compareTo(new Semver()) == 0
 assert new Semver(major: 0, minor: 0, patch: 2).compareTo(new Semver()) == 1
 assert new Semver(major: 0, minor: 0, patch: 3).compareTo(new Semver()) == 2
 assert new Semver(major: 0, minor: 1, patch: 0).compareTo(new Semver()) == 9
+
+assert new Semver(major: 0, minor: 1, patch: 0) > new Semver()
+assert new Semver(major: 0, minor: 1, patch: 1) > new Semver(major: 0, minor: 1, patch: 0)
+assert new Semver(major: 2, minor: 1, patch: 1) > new Semver(major: 0, minor: 1, patch: 0)

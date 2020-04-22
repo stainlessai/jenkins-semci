@@ -72,7 +72,9 @@ Methods:
 
     String artifactName()               // Return a string representing this artifact in a filename-friendly manner.
     String versionString()              // Return only the version if a prefix is present
-    Map toMap()                         // Return a map with the property values (filtered to remove variables like "class", etc).
+    Map toMap()                         // Return a map with the property values (filtered to remove variables like "class", etc).   
+
+    int compareTo(Semver o)             // Implements Comparable against other semantic versions
 ```
 
 ### ai.stainless.jenkins.ReleaseManager
@@ -98,17 +100,17 @@ pipeline {
 The release manager will examine the build properties, git repo branch and tags and return the expected artifact name and version. 
 For example, if we are working in a repo called "example" with a Jenkins job of "example":
 
-| Branch | Last Tag | semanticVersion() | artifactName() | artifactVersion() |
-|---|---|---|---|---|
-| master | (none) | example-0.0.1 | example-0.0.1 | 0.0.1 | 
-| develop | (none) | example-develop-0.0.1-SNAPSHOT | example-develop-0.0.1-SNAPSHOT | 0.0.1-develop-SNAPSHOT |
-| master | v1.2.3 | example-v1.2.3 | example-1.2.3 | 1.2.3 |
-| master | myprefix@1.2.3 | mypreix@1.2.3 | myprefix-1.2.3 | 1.2.3 |
-| develop | myprefix-v1.2.3 | myprefix-v1.2.3 | myprefix-1.2.3-develop-SNAPSHOT | 1.2.3-develop-SNAPSHOT
-| v2.0.0 | v1.9.5 | 2.0.0 | example-2.0.0 | 2.0.0 |
-| origin/myprefix@2.0.0 | myprefix@2.0.6 | myprefix@2.0.6 | myprefix-2.0.6 | 2.0.6 |
-| origin/myprefix@2.1.0 | myprefix@2.0.6 | myprefix@2.1.0 | myprefix-2.1.0 | 2.1.0 |
-| origin/myprefix@2.0.1 | Invalid: branch names must use semver patch .0 | Invalid | Invalid |
+| Branch | Last Tag | BUILD_NUMBER | semanticVersion() | artifactName() | artifactVersion() |
+|---|---|---|---|---|---|
+| master | (none) | (any) | example-0.0.1 | example-0.0.1 | 0.0.1 | 
+| develop | (none) | 1 | example-0.0.1-1-SNAPSHOT | example-0.0.1-1-SNAPSHOT | 0.0.1-1-SNAPSHOT |
+| master | v1.2.3 | (any) | example-v1.2.3 | example-1.2.3 | 1.2.3 |
+| master | myprefix@1.2.3 | (any) | myprefix@1.2.3 | myprefix-1.2.3 | 1.2.3 |
+| develop | myprefix-v1.2.3 | (any) | myprefix-v1.2.3 | myprefix-1.2.3-develop-SNAPSHOT | 1.2.3-develop-SNAPSHOT
+| v2.0.0 | v1.9.5 | (any) | 2.0.0 | example-2.0.0 | 2.0.0 |
+| origin/myprefix@2.0.0 | myprefix@2.0.6 | (any) | myprefix@2.0.6 | myprefix-2.0.6 | 2.0.6 |
+| origin/myprefix@2.1.0 | myprefix@2.0.6 | (any) | myprefix@2.1.0 | myprefix-2.1.0 | 2.1.0 |
+| origin/myprefix@2.0.1 | (any) | Invalid: branch names must use semver patch .0 | Invalid | Invalid | Invalid |
 
 Methods:
 ```$groovy

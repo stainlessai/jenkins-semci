@@ -35,14 +35,22 @@ class ReleaseManager {
         script.env.BRANCH_NAME == 'master'
     }
 
+    def getTags() {
+        return this.script.sh(script: "git for-each-ref --sort=creatordate --format '%(refname)' refs/tags", returnStdout: true)
+    }
+
     /**
      * Returns the latest semantic version according to the tag history in the underlying repository
      * @return
      */
-    String semanticVersion() {
+    String semanticVersion(boolean allowNonZeroPatchBranches = false) {
         // parse latest tag
-        def tags = this.script.sh(script: "git for-each-ref --sort=creatordate --format '%(refname)' refs/tags", returnStdout: true).readLines()
-        return tags.collect { Semver.fromRef(it.replaceAll('\'', ''), true) }.last()?.toString()  // must return String
+        if (tags.readLines().empty) throw new IllegalArgumentException("Can't determine semantic version: no tags")
+        def tagSemver = tags.readLines().collect { Semver.fromRef(it.replaceAll('\'', ''), true) }.last()
+        def branchSemver = Semver.fromRef(script.env.BRANCH_NAME, true)
+        if (!allowNonZeroPatchBranches && branchSemver > tagSemver && branchSemver.patch > 0)
+            throw new IllegalArgumentException("Invalid patch version in branch: ${script.env.BRANCH_NAME} (patch must be zero)")
+        return [tagSemver,branchSemver].sort().last().versionString()
     }
 
     /**
@@ -74,22 +82,19 @@ class ReleaseManager {
     private Semver artifact() {
         def semver = Semver.fromRef(semanticVersion())
 
-        if (isMasterBranch()) {
-            return semver
-        } else if (!isReleaseBranch(script.env.BRANCH_NAME)) {
-            semver.bumpMinor()
-            semver.prerelease = "${script.env.BUILD_NUMBER}-${script.env.BRANCH_NAME}-SNAPSHOT"
-        } else {
-            semver = Semver.fromRef(script.env.BRANCH_NAME)
-            semver.prerelease = "SNAPSHOT"
+        if (!isMasterBranch()) {
+            if (!isReleaseBranch(script.env.BRANCH_NAME)) {
+                semver.bumpMinor()
+                semver.prerelease = "${script.env.BUILD_NUMBER}-${script.env.BRANCH_NAME}-SNAPSHOT"
+            } else {
+                semver = Semver.fromRef(script.env.BRANCH_NAME)
+            }
         }
 
-//        println "semver.prefix=${semver.prefix}"
+        // if version == 0.0.0 make it 0.0.1
+        if (!semver.major && !semver.minor && !semver.patch) semver.bumpPatch()
         if (!semver.prefix) semver.prefix = script.env.JOB_NAME
         semver.v = null // don't add "v" to artifact name
-//        println "artifactName-> ${script.env}"
-//        println "semver-> ${semver.toMap()}"
-
         return semver
     }
 
