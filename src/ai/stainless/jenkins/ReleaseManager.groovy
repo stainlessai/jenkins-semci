@@ -23,7 +23,7 @@ class ReleaseManager {
     }
 
     String shortCommit() {
-        trimOutput("git log -n 1 --pretty=format:'%h'",7)
+        trimOutput("git log -n 1 --pretty=format:'%h'", 7)
     }
 
     private String trimOutput(String script, int maxLength) {
@@ -51,7 +51,7 @@ class ReleaseManager {
         def branchSemver = Semver.fromRef(script.env.BRANCH_NAME, true)
         if (!allowNonZeroPatchBranches && branchSemver > tagSemver && branchSemver.patch > 0)
             throw new IllegalArgumentException("Invalid patch version in branch: ${script.env.BRANCH_NAME} (patch must be zero)")
-        return [tagSemver,branchSemver].sort().last().versionString()
+        return [tagSemver, branchSemver].sort().last().versionString()
     }
 
     /**
