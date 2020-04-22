@@ -8,5 +8,5 @@
  *
  */
 def call(String gitRepo, String username, String password) {
-    sh "git fetch https://${username}:${password}@${gitRepo} --tags -p -P"
+    sh("git fetch https://${username}:${password}@${gitRepo} --tags -p -P", true)
 }
