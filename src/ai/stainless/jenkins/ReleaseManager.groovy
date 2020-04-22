@@ -36,7 +36,6 @@ class ReleaseManager {
     }
 
     def getTags() {
-        this.script.sh(script: "git fetch --all --tags -p -P", returnStdout: false)
         return this.script.sh(script: "git for-each-ref --sort=creatordate --format '%(refname)' refs/tags", returnStdout: true)
     }
 
