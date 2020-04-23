@@ -59,6 +59,9 @@ class ReleaseManager {
      * Calculates the current semantic version for the current build.
      * Returns a prerelease version if the current build is in 'prerelease' and a release version if on the masterBranch,
      * and there is a tag corresponding to the masterBranch/HEAD
+     *
+     * FIXME Properties calls need to be approved in Jenkins, use another class
+     *
      * @param allowNonZeroPatchBranches
      * @return
      */
@@ -80,16 +83,16 @@ class ReleaseManager {
 //        println taggedSemverListByTime*.toMap()
 
         // Don't use chronology when versioning develop or master, use version ordering
-        def lastTagSemverByTime = taggedSemverListByTime.last()
-        def lastTagSemverByVersion = taggedSemverListByTime.sort().last() // sort by natural order
+        def lastTagSemverByTime = taggedSemverListByTime.empty?null:taggedSemverListByTime.last()
+        def lastTagSemverByVersion = taggedSemverListByTime?.empty?null:taggedSemverListByTime.sort()?.last() // sort by natural order
         def releaseBranchSemver = Semver.fromRef(script.env.BRANCH_NAME, true)
         
-        def lastTaggedSemverOnThisReleaseBranch = lastTagSemverByVersion.findAll {
+        def lastTaggedSemverOnThisReleaseBranch = lastTagSemverByVersion?.findAll {
             it.major==releaseBranchSemver.major && it.minor==releaseBranchSemver.minor
         }
         def releaseBranchVersion = releaseBranchSemver
 
-        if (!lastTaggedSemverOnThisReleaseBranch.empty) {
+        if (lastTaggedSemverOnThisReleaseBranch && !lastTaggedSemverOnThisReleaseBranch.empty) {
             // find the latest version on this minor-patch subtree
             releaseBranchVersion = [lastTaggedSemverOnThisReleaseBranch.last(), releaseBranchSemver].sort().last()
         }
@@ -117,7 +120,7 @@ class ReleaseManager {
                 throw new IllegalBranchNameException("Patch is not zero: ${script.env.BRANCH_NAME}")
             // only bump patch if there is no patch tag > 0 on this branch
 //            println "diff=${releaseBranchVersion-lastTagSemverByVersion}"
-            if (releaseBranchVersion-lastTagSemverByVersion == 0)
+            if (lastTagSemverByTime && (releaseBranchVersion-lastTagSemverByVersion == 0))
                 releaseBranchVersion.bumpPatch()
             result = releaseBranchVersion
         } else {

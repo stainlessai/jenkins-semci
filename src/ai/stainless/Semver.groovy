@@ -127,10 +127,12 @@ class Semver implements Comparable<Semver> {
     // FIXME CPS problems running this on Jenkins
     @Override
     int compareTo(Semver o) {
+        if (!o) return 0;
         return ((this.major - o.major) * 100) + ((this.minor - o.minor) * 10) + this.patch - o.patch
     }
 
     int minus(Semver o) {
+        if (!o) return 0;
         return ((this.major - o.major) * 100) + ((this.minor - o.minor) * 10) + this.patch - o.patch
     }
 }

@@ -124,3 +124,9 @@ ReleaseManager.metaClass.getTags = {
 }
 
 assert "2.0.0" == new ReleaseManager(new TestScript(BUILD_NUMBER: "17", JOB_NAME: "jobby", BRANCH_NAME: "v2.0.0")).buildSemanticVersion()
+
+ReleaseManager.metaClass.getTags = {
+    return ""
+}
+
+assert "2.0.0" == new ReleaseManager(new TestScript(BUILD_NUMBER: "17", JOB_NAME: "jobby", BRANCH_NAME: "v2.0.0")).buildSemanticVersion()
