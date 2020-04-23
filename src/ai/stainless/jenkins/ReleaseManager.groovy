@@ -66,25 +66,27 @@ class ReleaseManager {
      * @return
      */
     String buildSemanticVersion(boolean allowNonZeroPatchBranches = false) {
-        // parse latest tag
-        def tagsChrono = getTags()
-//        println tagsChrono
-        def props = new Properties()
+        def tags
 
-        if (props.load(new StringReader(tagsChrono))?.empty) {
-            tagsChrono = this.script.sh(script: 'git for-each-ref --sort=creatordate --format \'%(refname)=%(objectname:short=7)\' refs/tags', returnStdout: true)
+        if ((tags = Tags.parse(getTags())).empty) {
+            def tagsChrono = this.script.sh(script: 'git for-each-ref --sort=creatordate --format \'%(refname)=%(objectname:short=7)\' refs/tags', returnStdout: true)
 //            if (tags.readLines().empty) {
 //                throw new IllegalArgumentException("Can't determine semantic version: no tags. If this is a new repo, create a tag for version zero (0.0.0)")
 //            }
+            tags = Tags.parse(tagsChrono)
         }
 
-        if (props.load(new StringReader(tagsChrono))?.empty) println "no tags!"// no tags!
-        def taggedSemverListByTime = props.collect { e -> Semver.fromRef(e.key.replaceAll('\'', ''), true).withObjectName(e.value) }
+        if (tags.empty) {
+            this.script.echo "WARNING: No tags found for build (this may not be a problem)"
+        } // no tags!
+
+        def taggedSemverListByTime = tags.toSemverList()
 //        println taggedSemverListByTime*.toMap()
 
         // Don't use chronology when versioning develop or master, use version ordering
-        def lastTagSemverByTime = taggedSemverListByTime?.empty ? null : taggedSemverListByTime.last()
-        def lastTagSemverByVersion = taggedSemverListByTime?.empty ? null : taggedSemverListByTime.sort()?.last()
+        // FIXME .empty doesn't work on Jenkins, so using size()==0
+        def lastTagSemverByTime = taggedSemverListByTime?.size()==0 ? null : taggedSemverListByTime.last()
+        def lastTagSemverByVersion = taggedSemverListByTime?.size()==0 ? null : taggedSemverListByTime.sort()?.last()
         // sort by natural order
         def releaseBranchSemver = Semver.fromRef(script.env.BRANCH_NAME, true)
 
