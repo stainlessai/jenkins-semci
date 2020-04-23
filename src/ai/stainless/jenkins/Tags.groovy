@@ -51,7 +51,7 @@ class Tags {
         def results = sortedByVersion().findAll {
             it.major == major && it.minor == minor
         }
-        if (results.empty) return null
+        if (results.size()==0) return null
         results
     }
 }
