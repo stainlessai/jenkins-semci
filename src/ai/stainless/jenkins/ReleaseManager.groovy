@@ -6,7 +6,7 @@ import ai.stainless.Semver
 class ReleaseManager {
 
     private final def script
-    
+
     /**
      * Releases are cut from the master branch
      */
@@ -33,7 +33,7 @@ class ReleaseManager {
     String commitHash() {
         trimOutput("git rev-parse --short=7 HEAD", 7)
     }
-    
+
     private String trimOutput(String script, int maxLength) {
         String content = this.script.sh(script: script, returnStdout: true)
         content.substring(0, Math.min(maxLength, content.length())).trim()
@@ -46,7 +46,7 @@ class ReleaseManager {
     boolean isReleaseBranch() {
         return checkReleaseBranch(script.env.BRANCH_NAME)
     }
-    
+
     /**
      * Can't pass information between calls without keeping state, but need this method for testing, so it's left
      * here in default form.
@@ -70,7 +70,7 @@ class ReleaseManager {
         def tagsChrono = getTags()
 //        println tagsChrono
         def props = new Properties()
-        
+
         if (props.load(new StringReader(tagsChrono))?.empty) {
             tagsChrono = this.script.sh(script: 'git for-each-ref --sort=creatordate --format \'%(refname)=%(objectname:short=7)\' refs/tags', returnStdout: true)
 //            if (tags.readLines().empty) {
@@ -79,16 +79,17 @@ class ReleaseManager {
         }
 
         if (props.load(new StringReader(tagsChrono))?.empty) println "no tags!"// no tags!
-        def taggedSemverListByTime = props.collect { e-> Semver.fromRef(e.key.replaceAll('\'', ''), true).withObjectName(e.value) }
+        def taggedSemverListByTime = props.collect { e -> Semver.fromRef(e.key.replaceAll('\'', ''), true).withObjectName(e.value) }
 //        println taggedSemverListByTime*.toMap()
 
         // Don't use chronology when versioning develop or master, use version ordering
-        def lastTagSemverByTime = taggedSemverListByTime.empty?null:taggedSemverListByTime.last()
-        def lastTagSemverByVersion = taggedSemverListByTime?.empty?null:taggedSemverListByTime.sort()?.last() // sort by natural order
+        def lastTagSemverByTime = taggedSemverListByTime.empty ? null : taggedSemverListByTime.last()
+        def lastTagSemverByVersion = taggedSemverListByTime?.empty ? null : taggedSemverListByTime.sort()?.last()
+        // sort by natural order
         def releaseBranchSemver = Semver.fromRef(script.env.BRANCH_NAME, true)
-        
+
         def lastTaggedSemverOnThisReleaseBranch = lastTagSemverByVersion?.findAll {
-            it.major==releaseBranchSemver.major && it.minor==releaseBranchSemver.minor
+            it.major == releaseBranchSemver.major && it.minor == releaseBranchSemver.minor
         }
         def releaseBranchVersion = releaseBranchSemver
 
@@ -101,10 +102,10 @@ class ReleaseManager {
         if (isMasterBranch()) {
 //            println "tag=${taggedSemverListByTime?.last()?.objectname}"
 //            println "hash=${commitHash()}"
-            if (commitHash()!=lastTagSemverByTime?.objectname) {
+            if (commitHash() != lastTagSemverByTime?.objectname) {
                 throw new IllegalArgumentException("No version can be calculated: branch ${script.env.BRANCH_NAME} requires a version tag")
             }
-            
+
             return lastTagSemverByTime.versionString()
         }
 
@@ -120,13 +121,13 @@ class ReleaseManager {
                 throw new IllegalBranchNameException("Patch is not zero: ${script.env.BRANCH_NAME}")
             // only bump patch if there is no patch tag > 0 on this branch
 //            println "diff=${releaseBranchVersion-lastTagSemverByVersion}"
-            if (lastTagSemverByTime && (releaseBranchVersion-lastTagSemverByVersion == 0))
+            if (lastTagSemverByTime && (releaseBranchVersion - lastTagSemverByVersion == 0))
                 releaseBranchVersion.bumpPatch()
             result = releaseBranchVersion
         } else {
             result = lastTagSemverByVersion.bumpMinor()
         }
-        
+
         if (!result.major && !result.minor && !result.patch) result.bumpPatch()
         return result.versionString()
     }
@@ -138,7 +139,7 @@ class ReleaseManager {
      * @return
      */
     private boolean checkReleaseBranch(String branchName) {
-        if (branchName==masterBranch) return false
+        if (branchName == masterBranch) return false
         try {
             def semver = Semver.fromRef(branchName)
 //            println "isReleaseBranch($branchName)-> ${semver.toMap()}"

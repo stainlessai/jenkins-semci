@@ -50,6 +50,9 @@ class Semver implements Comparable<Semver> {
      * @return
      */
     static Semver parse(String semverString, boolean ignoreErrors = false) {
+//        if (ignoreErrors && !semverString) return null;
+//        else if (!semverString) throw new IllegalArgumentException("Can't to parse null semverString")
+        
         def matcher = semverString =~ REGEX
 
         if (matcher.matches()) {
@@ -84,7 +87,7 @@ class Semver implements Comparable<Semver> {
         def path = null
         if (ref.contains('/')) {
             spl = ref.split('/')
-            ref = spl.last()
+            ref = spl.length==0?null:spl.last()
             path = spl[0..spl.size()-2].join('/')
         } // branch can start with a path
 
