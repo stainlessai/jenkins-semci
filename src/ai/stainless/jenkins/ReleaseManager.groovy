@@ -74,22 +74,19 @@ class ReleaseManager {
         if (tags.empty) {
             this.script.echo "WARNING: No tags found for build (this may not be a problem)"
         } // no tags!
-        
+
         // Don't use chronology when versioning develop or master, use version ordering
-        // FIXME .empty doesn't work on Jenkins, so using size()==0
-        def lastTagSemverByTime =  tags.toSemverList()?.last()
+        def lastTagSemverByTime = tags.toSemverList()?.last()
         def lastTagSemverByVersion = tags.sortedByVersion()?.last()
         // sort by natural order
         def releaseBranchSemver = Semver.fromRef(script.env.BRANCH_NAME, true)
 
-        def lastTaggedSemverOnThisReleaseBranch = lastTagSemverByVersion?.findAll {
-            it.major == releaseBranchSemver.major && it.minor == releaseBranchSemver.minor
-        }
+        def lastTaggedSemverOnThisReleaseBranch = tags.findAllByMajorAndMinor(releaseBranchSemver.major, releaseBranchSemver.minor)?.last()
         def releaseBranchVersion = releaseBranchSemver
 
-        if (lastTaggedSemverOnThisReleaseBranch && !lastTaggedSemverOnThisReleaseBranch.empty) {
+        if (lastTaggedSemverOnThisReleaseBranch) {
             // find the latest version on this minor-patch subtree
-            releaseBranchVersion = Tags.sortByVersion([lastTaggedSemverOnThisReleaseBranch.last(), releaseBranchSemver]).last()
+            releaseBranchVersion = Tags.sortByVersion([lastTaggedSemverOnThisReleaseBranch, releaseBranchSemver]).last()
         }
 
         // TODO if builds require tags and tag doesn't match HEAD, throw an error

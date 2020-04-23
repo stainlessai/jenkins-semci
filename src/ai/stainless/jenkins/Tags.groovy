@@ -21,7 +21,7 @@ class Tags {
     static Tags parse(String tagOutput) {
         def tags = new Tags()
         tagOutput.splitEachLine("=") {
-            tags.tags.put(it[0],it[1])
+            tags.tags.put(it[0], it[1])
         }
         return tags
     }
@@ -32,7 +32,7 @@ class Tags {
 
     @NonCPS
     def toSemverList() {
-        if (tags.size()==0) return null
+        if (tags.size() == 0) return null
         tags.collect { e -> Semver.fromRef(e.key.replaceAll('\'', ''), true).withObjectName(e.value) }
     }
 
@@ -44,5 +44,14 @@ class Tags {
     @NonCPS
     static def sortByVersion(def semverCollection) {
         return semverCollection.sort()
+    }
+
+    @NonCPS
+    def findAllByMajorAndMinor(int major, int minor) {
+        def results = sortedByVersion().findAll {
+            it.major == major && it.minor == minor
+        }
+        if (results.empty) return null
+        results
     }
 }
