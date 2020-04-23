@@ -30,6 +30,7 @@ class Tags {
         return tags.size() == 0
     }
 
+    @NonCPS
     def toSemverList() {
         if (tags.size()==0) return null
         tags.collect { e -> Semver.fromRef(e.key.replaceAll('\'', ''), true).withObjectName(e.value) }
