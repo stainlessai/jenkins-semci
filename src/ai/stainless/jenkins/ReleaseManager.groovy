@@ -80,11 +80,11 @@ class ReleaseManager {
 //        println taggedSemverListByTime*.toMap()
 
         // Don't use chronology when versioning develop or master, use version ordering
-        def lastSemverChrono = taggedSemverListByTime.last()
-        def lastSemverByVersionOrdering = taggedSemverListByTime.sort().last() // sort by natural order
+        def lastTagSemverByTime = taggedSemverListByTime.last()
+        def lastTagSemverByVersion = taggedSemverListByTime.sort().last() // sort by natural order
         def releaseBranchSemver = Semver.fromRef(script.env.BRANCH_NAME, true)
         
-        def lastTaggedSemverOnThisReleaseBranch = lastSemverByVersionOrdering.findAll {
+        def lastTaggedSemverOnThisReleaseBranch = lastTagSemverByVersion.findAll {
             it.major==releaseBranchSemver.major && it.minor==releaseBranchSemver.minor
         }
         def releaseBranchVersion = releaseBranchSemver
@@ -98,16 +98,16 @@ class ReleaseManager {
         if (isMasterBranch()) {
 //            println "tag=${taggedSemverListByTime?.last()?.objectname}"
 //            println "hash=${commitHash()}"
-            if (commitHash()!=lastSemverChrono?.objectname) {
+            if (commitHash()!=lastTagSemverByTime?.objectname) {
                 throw new IllegalArgumentException("No version can be calculated: branch ${script.env.BRANCH_NAME} requires a version tag")
             }
             
-            return lastSemverChrono.versionString()
+            return lastTagSemverByTime.versionString()
         }
 
 //        println "branch=${script.env.BRANCH_NAME}"
-//        println "lastSemverChrono=$lastSemverChrono"
-//        println "lastSemverByVersionOrdering=$lastSemverByVersionOrdering"
+//        println "lastTagSemverByTime=$lastTagSemverByTime"
+//        println "lastTagSemverByVersion=$lastTagSemverByVersion"
 //        println "releaseBranchSemver=$releaseBranchSemver"
 //        println "releaseBranchVersion=$releaseBranchVersion"
 
@@ -115,9 +115,13 @@ class ReleaseManager {
         if (isReleaseBranch()) {
             if (!allowNonZeroPatchBranches && releaseBranchSemver.patch > 0)
                 throw new IllegalBranchNameException("Patch is not zero: ${script.env.BRANCH_NAME}")
-            result = releaseBranchVersion.bumpPatch()
+            // only bump patch if there is no patch tag > 0 on this branch
+//            println "diff=${releaseBranchVersion-lastTagSemverByVersion}"
+            if (releaseBranchVersion-lastTagSemverByVersion == 0)
+                releaseBranchVersion.bumpPatch()
+            result = releaseBranchVersion
         } else {
-            result = lastSemverByVersionOrdering.bumpMinor()
+            result = lastTagSemverByVersion.bumpMinor()
         }
         
         if (!result.major && !result.minor && !result.patch) result.bumpPatch()

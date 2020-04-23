@@ -86,7 +86,6 @@ assert "jobby-2.1.0-10-develop-SNAPSHOT" == new ReleaseManager(new TestScript(BU
 assert "2.1.0" == new ReleaseManager(new TestScript(BUILD_NUMBER: "11", JOB_NAME: "jobby", BRANCH_NAME: "develop")).buildSemanticVersion()
 
 /*
- * FIXME In the case below, version 1.1.0 is released after version 2.1.0, and branch develop is being built.
  * Develop should always track the latest version ordered in terms of semantic version (not chronologically). Any releases
  * made to the 1.x.x branch must be made on the release branch. As a general rule, any releases made to any version where
  * a future release has been made can't be made on the develop branch.
@@ -103,8 +102,8 @@ ReleaseManager.metaClass.getTags = {
 }
 
 assert "2.0.7" == new ReleaseManager(new TestScript(BUILD_NUMBER: "13", JOB_NAME: "jobby", BRANCH_NAME: "origin/myprefix@2.0.0")).buildSemanticVersion()
-assert "2.1.1" == new ReleaseManager(new TestScript(BUILD_NUMBER: "14", JOB_NAME: "jobby", BRANCH_NAME: "origin/myprefix@2.1.0")).buildSemanticVersion()
-assert "jobby-2.1.1-14-SNAPSHOT" == new ReleaseManager(new TestScript(BUILD_NUMBER: "14", JOB_NAME: "jobby", BRANCH_NAME: "origin/myprefix@2.1.0")).artifactName()
+assert "2.1.0" == new ReleaseManager(new TestScript(BUILD_NUMBER: "14", JOB_NAME: "jobby", BRANCH_NAME: "origin/myprefix@2.1.0")).buildSemanticVersion()
+assert "jobby-2.1.0-14-SNAPSHOT" == new ReleaseManager(new TestScript(BUILD_NUMBER: "14", JOB_NAME: "jobby", BRANCH_NAME: "origin/myprefix@2.1.0")).artifactName()
 
 try {
 // This shouldn't be allowed, make configurable
@@ -115,3 +114,13 @@ try {
 
 def rm = new ReleaseManager(new TestScript(BUILD_NUMBER: "16", JOB_NAME: "jobby", BRANCH_NAME: "develop"))
 assert "2.1.0" == rm.buildSemanticVersion()
+
+//
+// "| v2.0.0 | v1.9.5 | v1.9.5 | (any) | 2.0.0 | example-2.0.0 | 2.0.0 |"
+//
+
+ReleaseManager.metaClass.getTags = {
+    return "v1.0.0=32c39f9\nv1.9.5=18a90bc"
+}
+
+assert "2.0.0" == new ReleaseManager(new TestScript(BUILD_NUMBER: "17", JOB_NAME: "jobby", BRANCH_NAME: "v2.0.0")).buildSemanticVersion()

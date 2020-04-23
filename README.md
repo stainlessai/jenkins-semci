@@ -1,8 +1,31 @@
 # jenkins-semci
-A shared library for Jenkins pipelines supporting SEMantic versioning and Continuous Integration. 
+A shared library for Jenkins pipelines providing classes and methods supporting SEMantic versioning and Continuous Integration. 
 
 #  Installation
 Install this as a shared pipeline library for Jenkins. See https://jenkins.io/doc/book/pipeline/shared-libraries/
+
+# Methodology & Features
+
+For a detailed description, see [CI/CD Pipeline (PROPOSED)](https://stainlesscode.atlassian.net/wiki/spaces/STAT/pages/560922625/CI+CD+Pipeline+PROPOSED).
+
+Summary:
+- All released versions are released from a single "master" branch
+- All released versions have tags
+- All other artifacts are prerelease versions
+- Each build creates a unique artifact name based on project name, branch name, build number and semantic version
+
+This library helps enforce these points, calculating version and artifact names automatically and throwing errors
+when required conditions are not met.
+
+Features:
+- Parses and understand common semantic version formats in tags and branches like vX.Y.Z and projectName-vX.Y.Z
+- Supports prefixes like prefix@X.Y.X and prefix-vX.Y.Z
+- Automatically extracts and checks commit hashes against tags to ensure release builds are correct
+- Supports ordering of version both by time applied and natural semantic ordering
+- Automatically ties artifact versions to branch versions where appropriate
+
+What this library does NOT do:
+- Manage branches and tags to ensure versions are what you WANT. Learn the method and do it manually, or use a tool.
 
 ## Example
 In the configuration of your pipeline:
@@ -100,17 +123,17 @@ pipeline {
 The release manager will examine the build properties, git repo branch and tags and return the expected artifact name and version. 
 For example, if we are working in a repo called "example" with a Jenkins job of "example":
 
-| Branch | Last Tag | BUILD_NUMBER | semanticVersion() | artifactName() | artifactVersion() |
-|---|---|---|---|---|---|
-| master | (none) | (any) | example-0.0.1 | example-0.0.1 | 0.0.1 | 
-| develop | (none) | 1 | example-0.0.1-1-SNAPSHOT | example-0.0.1-1-SNAPSHOT | 0.0.1-1-SNAPSHOT |
-| master | v1.2.3 | (any) | example-v1.2.3 | example-1.2.3 | 1.2.3 |
-| master | myprefix@1.2.3 | (any) | myprefix@1.2.3 | myprefix-1.2.3 | 1.2.3 |
-| develop | myprefix-v1.2.3 | (any) | myprefix-v1.2.3 | myprefix-1.2.3-develop-SNAPSHOT | 1.2.3-develop-SNAPSHOT
-| v2.0.0 | v1.9.5 | (any) | 2.0.0 | example-2.0.0 | 2.0.0 |
-| origin/myprefix@2.0.0 | myprefix@2.0.6 | (any) | myprefix@2.0.6 | myprefix-2.0.6 | 2.0.6 |
-| origin/myprefix@2.1.0 | myprefix@2.0.6 | (any) | myprefix@2.1.0 | myprefix-2.1.0 | 2.1.0 |
-| origin/myprefix@2.0.1 | (any) | Invalid: branch names must use semver patch .0 | Invalid | Invalid | Invalid |
+| Branch | Last Tag (by time) | Last Tag (by version) | BUILD_NUMBER | semanticVersion() | artifactName() | artifactVersion() |
+|---|---|---|---|---|---|---|
+| master | (none) | (none) | (any) | ERROR: No tag | ERROR: No tag | ERROR: No tag | 
+| develop | (none) | (none) | 1 | example-0.0.1-1-SNAPSHOT | example-0.0.1-1-SNAPSHOT | 0.0.1-1-SNAPSHOT |
+| master | v1.2.3 | v1.2.3 | (any) | example-v1.2.3 | example-1.2.3 | 1.2.3 |
+| master | myprefix@1.2.3 | myprefix@1.2.3 | (any) | myprefix@1.2.3 | myprefix-1.2.3 | 1.2.3 |
+| develop | myprefix-v1.2.3 | myprefix-v1.2.3 | (any) | myprefix-v1.3.0 | myprefix-1.3.0-develop-SNAPSHOT | 1.3.0-develop-SNAPSHOT
+| v2.0.0 | v1.9.5 | v1.9.5 | (any) | 2.0.0 | example-2.0.0 | 2.0.0 |
+| origin/myprefix@2.0.0 | myprefix@2.0.6 | myprefix@2.0.6 | (any) | myprefix@2.0.6 | myprefix-2.0.6 | 2.0.6 |
+| origin/myprefix@2.1.0 | myprefix@2.0.6 | | (any) | myprefix@2.1.0 | myprefix-2.1.0 | 2.1.0 |
+| origin/myprefix@2.0.1 | (any) | (any) |(any)| ERROR: Invalid branch name | ERROR: Invalid branch name | ERROR: Invalid branch name |
 
 Methods:
 ```$groovy

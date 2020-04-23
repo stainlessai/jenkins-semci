@@ -129,4 +129,8 @@ class Semver implements Comparable<Semver> {
     int compareTo(Semver o) {
         return ((this.major - o.major) * 100) + ((this.minor - o.minor) * 10) + this.patch - o.patch
     }
+
+    int minus(Semver o) {
+        return ((this.major - o.major) * 100) + ((this.minor - o.minor) * 10) + this.patch - o.patch
+    }
 }
