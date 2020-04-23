@@ -1,5 +1,7 @@
 package ai.stainless
 
+import com.cloudbees.groovy.cps.NonCPS
+
 /**
  * Semantic version class that supports a prefix
  */
@@ -82,6 +84,7 @@ class Semver implements Comparable<Semver> {
      * @param branch
      * @return
      */
+    @NonCPS
     static Semver fromRef(String ref, boolean ignoreErrors = false) {
         def spl = []
         def path = null
