@@ -15,24 +15,33 @@ class Semver implements Comparable<Semver> {
     int minor = 0
     int patch = 1
     def prerelease
+    def objectname
 
     static def nullIfEmpty(string) {
         if (!string || string.length()==0) return null
         string
     }
 
-    void bumpPatch() {
+    Semver bumpPatch() {
         patch++
+        return this
     }
 
-    void bumpMinor() {
+    Semver bumpMinor() {
         minor++
         patch = 0
+        return this
     }
 
-    void bumpMajor() {
+    Semver bumpMajor() {
         major++
         minor = patch = 0
+        return this
+    }
+
+    Semver withObjectName(String objectName) {
+        this.objectname = objectName
+        return this
     }
 
     /**
@@ -112,9 +121,10 @@ class Semver implements Comparable<Semver> {
 
     // Use of this method will be rejected by Jenkins' Groovy sandbox
     Map toMap() {
-        this.properties.subMap(['path','prefix','v','major','minor','patch','prerelease'])
+        this.properties.subMap(['path','prefix','v','major','minor','patch','prerelease','objectname'])
     }
 
+    // FIXME CPS problems running this on Jenkins
     @Override
     int compareTo(Semver o) {
         return ((this.major - o.major) * 100) + ((this.minor - o.minor) * 10) + this.patch - o.patch
