@@ -51,6 +51,7 @@ class Semver implements Comparable<Semver> {
      * @param branch
      * @return
      */
+    @NonCPS
     static Semver parse(String semverString, boolean ignoreErrors = false) {
 //        if (ignoreErrors && !semverString) return null;
 //        else if (!semverString) throw new IllegalArgumentException("Can't to parse null semverString")
