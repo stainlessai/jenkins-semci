@@ -19,22 +19,26 @@ class Semver implements Comparable<Semver> {
     def prerelease
     def objectname
 
+    @NonCPS
     static def nullIfEmpty(string) {
         if (!string || string.length()==0) return null
         string
     }
 
+    @NonCPS
     Semver bumpPatch() {
         patch++
         return this
     }
 
+    @NonCPS
     Semver bumpMinor() {
         minor++
         patch = 0
         return this
     }
 
+    @NonCPS
     Semver bumpMajor() {
         major++
         minor = patch = 0
@@ -104,41 +108,49 @@ class Semver implements Comparable<Semver> {
         return semver
     }
 
+    @NonCPS
     String fullPrefix() {
         if (prefix && v && v=='v') return "$prefix$prefixDelim"
         else if (prefix) return "$prefix"
         return ''
     }
 
+    @NonCPS
     String fullPreRelease() {
         if (prerelease) return "$preReleaseDelim$prerelease"
         return ''
     }
 
+    @NonCPS
     String toString() {
         return "${this.fullPrefix()}${v?:''}$major.$minor.$patch${this.fullPreRelease()}"
     }
 
+    @NonCPS
     String artifactName() {
         return "${this.fullPrefix()}-$major.$minor.$patch${this.fullPreRelease()}"
     }
 
+    @NonCPS
     String versionString() {
         return "$major.$minor.$patch${this.fullPreRelease()}"
     }
 
     // Use of this method will be rejected by Jenkins' Groovy sandbox
+    @NonCPS
     Map toMap() {
         this.properties.subMap(['path','prefix','v','major','minor','patch','prerelease','objectname'])
     }
 
     // FIXME CPS problems running this on Jenkins
     @Override
+    @NonCPS
     int compareTo(Semver o) {
         if (!o) return 0;
         return ((this.major - o.major) * 100) + ((this.minor - o.minor) * 10) + this.patch - o.patch
     }
 
+    @NonCPS
     int minus(Semver o) {
         if (!o) return 0;
         return ((this.major - o.major) * 100) + ((this.minor - o.minor) * 10) + this.patch - o.patch
