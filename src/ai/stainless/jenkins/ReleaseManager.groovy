@@ -60,33 +60,25 @@ class ReleaseManager {
      * Returns a prerelease version if the current build is in 'prerelease' and a release version if on the masterBranch,
      * and there is a tag corresponding to the masterBranch/HEAD
      *
-     * FIXME Properties calls need to be approved in Jenkins, use another class
-     *
      * @param allowNonZeroPatchBranches
      * @return
      */
     String buildSemanticVersion(boolean allowNonZeroPatchBranches = false) {
-        def tags
+        def tags = Tags.parse(getTags())
 
-        if ((tags = Tags.parse(getTags())).empty) {
-            def tagsChrono = this.script.sh(script: 'git for-each-ref --sort=creatordate --format \'%(refname)=%(objectname:short=7)\' refs/tags', returnStdout: true)
-//            if (tags.readLines().empty) {
-//                throw new IllegalArgumentException("Can't determine semantic version: no tags. If this is a new repo, create a tag for version zero (0.0.0)")
-//            }
+        if (tags.empty) {
+            String tagsChrono = this.script.sh(script: 'git for-each-ref --sort=creatordate --format \'%(refname)=%(objectname:short=7)\' refs/tags', returnStdout: true)
             tags = Tags.parse(tagsChrono)
         }
 
         if (tags.empty) {
             this.script.echo "WARNING: No tags found for build (this may not be a problem)"
         } // no tags!
-
-        def taggedSemverListByTime = tags.toSemverList()
-//        println taggedSemverListByTime*.toMap()
-
+        
         // Don't use chronology when versioning develop or master, use version ordering
         // FIXME .empty doesn't work on Jenkins, so using size()==0
-        def lastTagSemverByTime = taggedSemverListByTime?.size()==0 ? null : taggedSemverListByTime.last()
-        def lastTagSemverByVersion = taggedSemverListByTime?.size()==0 ? null : taggedSemverListByTime.sort()?.last()
+        def lastTagSemverByTime =  tags.toSemverList()?.last()
+        def lastTagSemverByVersion = tags.sortedByVersion()?.last()
         // sort by natural order
         def releaseBranchSemver = Semver.fromRef(script.env.BRANCH_NAME, true)
 
@@ -97,7 +89,7 @@ class ReleaseManager {
 
         if (lastTaggedSemverOnThisReleaseBranch && !lastTaggedSemverOnThisReleaseBranch.empty) {
             // find the latest version on this minor-patch subtree
-            releaseBranchVersion = [lastTaggedSemverOnThisReleaseBranch.last(), releaseBranchSemver].sort().last()
+            releaseBranchVersion = Tags.sortByVersion([lastTaggedSemverOnThisReleaseBranch.last(), releaseBranchSemver]).last()
         }
 
         // TODO if builds require tags and tag doesn't match HEAD, throw an error
