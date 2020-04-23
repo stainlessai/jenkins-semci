@@ -41,6 +41,7 @@ class Semver implements Comparable<Semver> {
         return this
     }
 
+    @NonCPS
     Semver withObjectName(String objectName) {
         this.objectname = objectName
         return this
