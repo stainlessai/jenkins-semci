@@ -83,7 +83,7 @@ class ReleaseManager {
 //        println taggedSemverListByTime*.toMap()
 
         // Don't use chronology when versioning develop or master, use version ordering
-        def lastTagSemverByTime = taggedSemverListByTime.empty ? null : taggedSemverListByTime.last()
+        def lastTagSemverByTime = taggedSemverListByTime?.empty ? null : taggedSemverListByTime.last()
         def lastTagSemverByVersion = taggedSemverListByTime?.empty ? null : taggedSemverListByTime.sort()?.last()
         // sort by natural order
         def releaseBranchSemver = Semver.fromRef(script.env.BRANCH_NAME, true)

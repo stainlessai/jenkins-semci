@@ -87,7 +87,7 @@ class Semver implements Comparable<Semver> {
         def path = null
         if (ref.contains('/')) {
             spl = ref.split('/')
-            ref = spl.length==0?null:spl.last()
+            ref = spl.size()==0?null:spl.last()
             path = spl[0..spl.size()-2].join('/')
         } // branch can start with a path
 
