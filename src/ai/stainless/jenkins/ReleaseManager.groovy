@@ -18,8 +18,18 @@ class ReleaseManager {
      */
     def prereleaseBranches = ['develop']
 
+    /**
+     * A prefix filter regex for branches and tags. If null will just use full tag or branch list.
+     */
+    def prefixFilterRegex = null
+
     ReleaseManager(def script) {
         this.script = script
+    }
+
+    ReleaseManager(def script, String prefixFilter) {
+        this.script = script
+        this.prefixFilterRegex = prefixFilter
     }
 
     String commitMessage() {
@@ -76,12 +86,12 @@ class ReleaseManager {
         } // no tags!
 
         // Don't use chronology when versioning develop or master, use version ordering
-        def lastTagSemverByTime = tags.toSemverList()?.last()
-        def lastTagSemverByVersion = tags.sortedByVersion()?.last()
+        def lastTagSemverByTime = tags.toSemverList(prefixFilterRegex)?.last()
+        def lastTagSemverByVersion = tags.sortedByVersion(prefixFilterRegex)?.last()
         // sort by natural order
         def releaseBranchSemver = Semver.fromRef(script.env.BRANCH_NAME, true)
 
-        def lastTaggedSemverOnThisReleaseBranch = tags.findAllByMajorAndMinor(releaseBranchSemver.major, releaseBranchSemver.minor)?.last()
+        def lastTaggedSemverOnThisReleaseBranch = tags.findAllByMajorAndMinorAndPrefixFilter(releaseBranchSemver.major, releaseBranchSemver.minor, prefixFilterRegex)?.last()
         def releaseBranchVersion = releaseBranchSemver
 
         if (lastTaggedSemverOnThisReleaseBranch) {

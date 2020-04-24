@@ -30,15 +30,25 @@ class Tags {
         return tags.size() == 0
     }
 
+    /**
+     * return the parsed tags as a list of semantic version objects, maybe filtered by prefix
+     * @param filter if supplied, a regex to find a subset of all the versions filtered by prefix
+     * @return
+     */
     @NonCPS
-    def toSemverList() {
+    def toSemverList(String filter = null) {
         if (tags.size() == 0) return null
-        tags.collect { e -> Semver.fromRef(e.key.replaceAll('\'', ''), true).withObjectName(e.value) }
+        if (filter) {
+            tags.findAll { e -> e.key =~/${filter}/ }.collect { e -> Semver.fromRef(e.key.replaceAll('\'', ''), true).withObjectName(e.value) }
+        } else {
+            tags.collect { e -> Semver.fromRef(e.key.replaceAll('\'', ''), true).withObjectName(e.value) }
+        }
     }
 
     @NonCPS
-    def sortedByVersion() {
-        return toSemverList().sort()
+    def sortedByVersion(String prefixFilter = null) {
+        def l = toSemverList(prefixFilter).sort()
+        return l.sort()
     }
 
     @NonCPS
@@ -47,8 +57,8 @@ class Tags {
     }
 
     @NonCPS
-    def findAllByMajorAndMinor(int major, int minor) {
-        def results = sortedByVersion().findAll {
+    def findAllByMajorAndMinorAndPrefixFilter(int major, int minor, String prefixFilter = null) {
+        def results = sortedByVersion(prefixFilter).findAll {
             it.major == major && it.minor == minor
         }
         if (results.size()==0) return null

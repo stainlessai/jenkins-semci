@@ -136,3 +136,27 @@ ReleaseManager.metaClass.getTags = {
 }
 
 assert "2.0.0" == new ReleaseManager(new TestScript(BUILD_NUMBER: "19", JOB_NAME: "jobby", BRANCH_NAME: "v2.0.0")).buildSemanticVersion()
+
+//
+//
+// Test filters
+//
+//
+
+ReleaseManager.metaClass.getTags = {
+return '''
+prefix2@2.0.0=0123456
+prefix2@2.0.1=0123457
+prefix2@2.0.2=0123458
+prefix2@2.0.3=0123459
+prefix2@2.1.0=0123450
+prefix1-v1.0.0=0123456
+prefix1-v1.0.1=0123457
+prefix1-v1.0.2=0123458
+prefix1-v1.0.3=0123459
+prefix1-v1.1.0=0123450
+'''
+}
+
+assert "2.2.0" == new ReleaseManager(new TestScript(BUILD_NUMBER: "20", JOB_NAME: "jobby", BRANCH_NAME: "develop"),"^prefix2").buildSemanticVersion()
+assert "1.2.0" == new ReleaseManager(new TestScript(BUILD_NUMBER: "21", JOB_NAME: "jobby", BRANCH_NAME: "develop"),"^prefix1").buildSemanticVersion()
