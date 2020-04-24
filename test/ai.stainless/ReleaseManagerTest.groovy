@@ -149,21 +149,21 @@ assert "2.0.0" == new ReleaseManager(new TestScript(BUILD_NUMBER: "19", JOB_NAME
 
 ReleaseManager.metaClass.getTags = {
 return '''
-prefix2@2.0.0=0123456
-prefix2@2.0.1=0123457
-prefix2@2.0.2=0123458
-prefix2@2.0.3=0123459
-prefix2@2.1.0=0123450
-prefix1-v1.0.0=0123456
-prefix1-v1.0.1=0123457  
-prefix1-v1.0.2=0123458
-prefix1-v1.0.3=0123459
-prefix1-v1.1.0=0123450
+refs/tags/prefix2@2.0.0=0123456
+refs/tags/prefix2@2.0.1=0123457
+refs/tags/prefix2@2.0.2=0123458
+refs/tags/prefix2@2.0.3=0123459
+refs/tags/prefix2@2.1.0=0123450
+refs/tags/prefix1-v1.0.0=0123456
+refs/tags/prefix1-v1.0.1=0123457  
+refs/tags/prefix1-v1.0.2=0123458
+refs/tags/prefix1-v1.0.3=0123459
+refs/tags/prefix1-v1.1.0=0123450
 '''
 }
 
-assert "2.2.0" == new ReleaseManager(new TestScript(BUILD_NUMBER: "20", JOB_NAME: "jobby", BRANCH_NAME: "develop"),"^prefix2").buildSemanticVersion()
-assert "1.2.0" == new ReleaseManager(new TestScript(BUILD_NUMBER: "21", JOB_NAME: "jobby", BRANCH_NAME: "develop"),"^prefix1").buildSemanticVersion()
+assert "2.2.0" == new ReleaseManager(new TestScript(BUILD_NUMBER: "20", JOB_NAME: "jobby", BRANCH_NAME: "develop"),"prefix2").buildSemanticVersion()
+assert "1.2.0" == new ReleaseManager(new TestScript(BUILD_NUMBER: "21", JOB_NAME: "jobby", BRANCH_NAME: "develop"),"prefix1").buildSemanticVersion()
 
 //
 // java.lang.NullPointerException: Cannot invoke method bumpMinor() on null object
@@ -191,3 +191,29 @@ try {
 }
 
 assert thrown
+
+//
+// test prefixes with paths
+//
+
+ReleaseManager.metaClass.getTags = {
+    return '''refs/tags/prefix1_0.1.0=550f5a1
+refs/tags/prefix-v0.1.1=fdd19b7
+refs/tags/prefix1-v0.1.2=8bba2d4
+refs/tags/prefix1-v0.1.3=b0bf85b
+refs/tags/prefix1-v0.1.6=37eb66a
+refs/tags/prefix1-v0.1.4=7a20de3
+refs/tags/prefix1-v0.1.7=8fff2ea
+refs/tags/prefix1-v0.1.5=7cf62ad
+'''
+}
+    
+thrown = false
+try {
+    assert "0.2.0" == new ReleaseManager(new TestScript(BUILD_NUMBER: "21", JOB_NAME: "jobby", BRANCH_NAME: "develop"),"prefix1").buildSemanticVersion()
+} catch (MissingTagException e) {
+    thrown = true
+    assert e.message =~ /^Prefix provided/
+}
+
+assert !thrown
