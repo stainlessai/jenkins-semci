@@ -16,6 +16,9 @@ class TestScript {
         cmd.waitFor()
         return out.toString()
     }
+    def echo(str) {
+        println str
+    }
 }
 
 ReleaseManager.metaClass.getTags = {
