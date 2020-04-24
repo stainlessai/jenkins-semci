@@ -37,28 +37,32 @@ class Tags {
      */
     @NonCPS
     def toSemverList(String filter = null) {
-        if (tags.size() == 0) return null
+        def result = null
+        if (tags.size() == 0) return result
         if (filter) {
-            tags.findAll { e -> e.key =~/${filter}/ }.collect { e -> Semver.fromRef(e.key.replaceAll('\'', ''), true).withObjectName(e.value) }
+            result = tags.findAll { e -> e.key =~/${filter}/ }.collect { e -> Semver.fromRef(e.key.replaceAll('\'', ''), true).withObjectName(e.value) }
         } else {
-            tags.collect { e -> Semver.fromRef(e.key.replaceAll('\'', ''), true).withObjectName(e.value) }
+            result = tags.collect { e -> Semver.fromRef(e.key.replaceAll('\'', ''), true).withObjectName(e.value) }
         }
+        // return null instead of empty list to avoid "cannot access last() from empty list exception"
+        if (result.size()==0) return null
+        result
     }
 
     @NonCPS
     def sortedByVersion(String prefixFilter = null) {
-        def l = toSemverList(prefixFilter).sort()
-        return l.sort()
+        def l = toSemverList(prefixFilter)?.sort()
+        return l
     }
 
     @NonCPS
     static def sortByVersion(def semverCollection) {
-        return semverCollection.sort()
+        return semverCollection?.sort()
     }
 
     @NonCPS
     def findAllByMajorAndMinorAndPrefixFilter(int major, int minor, String prefixFilter = null) {
-        def results = sortedByVersion(prefixFilter).findAll {
+        def results = sortedByVersion(prefixFilter)?.findAll {
             it.major == major && it.minor == minor
         }
         if (results.size()==0) return null

@@ -99,22 +99,21 @@ class ReleaseManager {
             releaseBranchVersion = Tags.sortByVersion([lastTaggedSemverOnThisReleaseBranch, releaseBranchSemver]).last()
         }
 
-        // TODO if builds require tags and tag doesn't match HEAD, throw an error
+//        println "branch=${script.env.BRANCH_NAME}"
+//        println "prefixFilterRegex=${prefixFilterRegex}"
+//        println "tags=${tags.tags}"
+//        println "lastTagSemverByTime=$lastTagSemverByTime"
+//        println "lastTagSemverByVersion=$lastTagSemverByVersion"
+//        println "releaseBranchSemver=$releaseBranchSemver"
+//        println "releaseBranchVersion=$releaseBranchVersion"
+        
         if (isMasterBranch()) {
-//            println "tag=${taggedSemverListByTime?.last()?.objectname}"
-//            println "hash=${commitHash()}"
             if (commitHash() != lastTagSemverByTime?.objectname) {
                 throw new IllegalArgumentException("No version can be calculated: branch ${script.env.BRANCH_NAME} requires a version tag")
             }
 
             return lastTagSemverByTime.versionString()
         }
-
-//        println "branch=${script.env.BRANCH_NAME}"
-//        println "lastTagSemverByTime=$lastTagSemverByTime"
-//        println "lastTagSemverByVersion=$lastTagSemverByVersion"
-//        println "releaseBranchSemver=$releaseBranchSemver"
-//        println "releaseBranchVersion=$releaseBranchVersion"
 
         def result
         if (isReleaseBranch()) {
