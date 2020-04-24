@@ -65,7 +65,7 @@ class Tags {
         def results = sortedByVersion(prefixFilter)?.findAll {
             it.major == major && it.minor == minor
         }
-        if (results.size()==0) return null
+        if (!results || results.size()==0) return null
         results
     }
 }
