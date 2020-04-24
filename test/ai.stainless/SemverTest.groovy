@@ -39,12 +39,6 @@ cmd.waitFor()
 def lines = out.readLines()
 println lines.collect { Semver.fromRef(it.replaceAll('\'',''),true) }.last().toMap()
 
-//try {
-//    println Semver.fromBranch("origin/kallisto-admin-v1.2")
-//} catch (IllegalArgumentException e) {
-//    println "Invalid semver detected: ${e.message}"
-//}
-
 assert new Semver().compareTo(new Semver()) == 0
 assert new Semver(major: 0, minor: 0, patch: 1).compareTo(new Semver()) == 0
 assert new Semver(major: 0, minor: 0, patch: 2).compareTo(new Semver()) == 1

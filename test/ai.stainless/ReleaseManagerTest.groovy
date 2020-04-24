@@ -27,7 +27,7 @@ def thrown = false
 try {
     assert "0.0.1" == new ReleaseManager(new TestScript(BUILD_NUMBER: "1", JOB_NAME: "jobby", BRANCH_NAME: "master")).buildSemanticVersion()
     assert "jobby-0.0.1" == new ReleaseManager(new TestScript(BUILD_NUMBER: "2", JOB_NAME: "jobby", BRANCH_NAME: "master")).artifactName()
-} catch (IllegalArgumentException e) {
+} catch (MissingTagException e) {
     thrown = true
     assert e.message =~ /^No version/
 }
@@ -51,7 +51,7 @@ thrown = false
 try {
     assert "0.0.1" == new ReleaseManager(new TestScript(BUILD_NUMBER: "3", JOB_NAME: "jobby", BRANCH_NAME: "master")).buildSemanticVersion()
     assert "jobby-0.0.1" == new ReleaseManager(new TestScript(BUILD_NUMBER: "4", JOB_NAME: "jobby", BRANCH_NAME: "master")).artifactName()
-} catch (IllegalArgumentException e) {
+} catch (MissingTagException e) {
     thrown = true
     assert e.message =~ /^No version/
 }

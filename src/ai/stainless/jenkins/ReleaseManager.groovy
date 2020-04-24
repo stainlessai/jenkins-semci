@@ -110,7 +110,7 @@ class ReleaseManager {
         
         if (isMasterBranch()) {
             if (commitHash() != lastTagSemverByTime?.objectname) {
-                throw new IllegalArgumentException("No version can be calculated: branch ${script.env.BRANCH_NAME} requires a version tag")
+                throw new MissingTagException("No version can be calculated: branch ${script.env.BRANCH_NAME} requires a version tag")
             }
 
             return lastTagSemverByTime.versionString()

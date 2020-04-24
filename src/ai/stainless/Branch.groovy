@@ -20,7 +20,7 @@ class Branch {
             return new Branch(remote:'origin', semver:Semver.fromBranch(branch))
         }
         
-        throw new IllegalArgumentException("Unable to parse ReleaseBranch: $branch")
+        throw new IllegalBranchNameException("Unable to parse ReleaseBranch: $branch")
     }
 
     String toString() {
