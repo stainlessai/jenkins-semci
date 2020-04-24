@@ -1,4 +1,5 @@
 import ai.stainless.IllegalBranchNameException
+import ai.stainless.MissingTagException
 import ai.stainless.jenkins.ReleaseManager
 
 class TestScript {
@@ -160,3 +161,30 @@ prefix1-v1.1.0=0123450
 
 assert "2.2.0" == new ReleaseManager(new TestScript(BUILD_NUMBER: "20", JOB_NAME: "jobby", BRANCH_NAME: "develop"),"^prefix2").buildSemanticVersion()
 assert "1.2.0" == new ReleaseManager(new TestScript(BUILD_NUMBER: "21", JOB_NAME: "jobby", BRANCH_NAME: "develop"),"^prefix1").buildSemanticVersion()
+
+//
+// java.lang.NullPointerException: Cannot invoke method bumpMinor() on null object
+//	at ai.stainless.Semver$bumpMinor$8.call(Unknown Source)
+//	at ai.stainless.jenkins.ReleaseManager.buildSemanticVersion(ReleaseManager.groovy:128)
+//	at ai.stainless.jenkins.ReleaseManager.buildSemanticVersion(ReleaseManager.groovy)
+//	at ai.stainless.jenkins.ReleaseManager$buildSemanticVersion.call(Unknown Source)
+//	at ReleaseManagerTest.run(ReleaseManagerTest.groovy:169)
+//	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+//	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+//	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+//
+
+ReleaseManager.metaClass.getTags = {
+    return '''
+'''
+}
+
+thrown = false
+try {
+    assert "0.0.1" == new ReleaseManager(new TestScript(BUILD_NUMBER: "21", JOB_NAME: "jobby", BRANCH_NAME: "develop"),"^prefix1").buildSemanticVersion()
+} catch (MissingTagException e) {
+    thrown = true
+    assert e.message =~ /^Prefix provided/
+}
+
+assert thrown

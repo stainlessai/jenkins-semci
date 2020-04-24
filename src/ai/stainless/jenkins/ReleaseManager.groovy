@@ -1,6 +1,7 @@
 package ai.stainless.jenkins
 
 import ai.stainless.IllegalBranchNameException
+import ai.stainless.MissingTagException
 import ai.stainless.Semver
 
 class ReleaseManager {
@@ -125,6 +126,9 @@ class ReleaseManager {
                 releaseBranchVersion.bumpPatch()
             result = releaseBranchVersion
         } else {
+            if (!lastTagSemverByVersion) {
+                throw new MissingTagException("Prefix provided, but no tags found: '$prefixFilterRegex'")
+            }
             result = lastTagSemverByVersion.bumpMinor()
         }
 
