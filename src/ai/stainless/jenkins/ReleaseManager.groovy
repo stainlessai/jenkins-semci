@@ -197,6 +197,19 @@ class ReleaseManager {
      */
     @NonCPS
     boolean changesInThisSubtree(String regexFilter = null) {
+        String wd = this.script.pwd().replaceFirst("${this.script.env.WORKSPACE}/", '')
+//        this.script.echo("wd is $wd")
+        return changesInSubtree(wd)
+    }
+
+    /**
+     * Return changes, if any, in the specified subtree
+     * @param relPath
+     * @param regexFilter
+     * @return
+     */
+    @NonCPS
+    boolean changesInSubtree(String wd, String regexFilter = null) {
         // can't use this in Jenkins, security issue
 //        Path workspacePath = Paths.get(this.script.env.WORKSPACE)
 //        Path pwd = Paths.get(this.script.pwd())
@@ -205,8 +218,6 @@ class ReleaseManager {
 //        Path wd = workspacePath.relativize(pwd)
 //        this.script.echo("wd is $wd")
 
-        String wd = this.script.pwd().replaceFirst("${this.script.env.WORKSPACE}/", '')
-        this.script.echo("wd is $wd")
         def changes = []
 
         // multiple change sets include changes to shared libraries, etc.
