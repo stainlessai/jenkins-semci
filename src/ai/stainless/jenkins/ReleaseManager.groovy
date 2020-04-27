@@ -252,4 +252,11 @@ class ReleaseManager {
 
         return false
     }
+
+    @NonCPS
+    boolean changesInSubtreeOrTriggeredManually(String wd, String regexFilter = null) {
+        def triggeredManually = this.script.currentBuild.getBuildCauses('hudson.model.Cause$UserIdCause')?.size() > 0
+        this.script.echo("Was this build triggered manually? $triggeredManually")
+        return changesInSubtree(wd, regexFilter) || triggeredManually
+    }
 }
