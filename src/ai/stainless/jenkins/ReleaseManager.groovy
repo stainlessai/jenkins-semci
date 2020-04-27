@@ -197,20 +197,20 @@ class ReleaseManager {
      */
     @NonCPS
     boolean directoryAtThisRootChanged(String regexFilter = null) {
-        println "I'm in directory ${this.script.pwd()}"
+        this.script.echo("I'm in directory ${this.script.pwd()}")
         def changeSet = this.script.currentBuild.changeSets[0]
         if (changeSet && changeSet.items.size() > 0) {
             for (change in changeSet.items) {
-                println change.commitId
+                this.script.echo(change.commitId)
                 for (path in change.paths) {
-                    println "path=${path.path}"
-                    println "src=${path.src}"
-                    println "editType=${path.editType}"
+                    this.script.echo("path=${path.path}")
+                    this.script.echo("src=${path.src}")
+                    this.script.echo("editType=${path.editType}")
                     // is path in cwd
                 }
             }
         } else {
-            println "No changes!"
+            this.script.echo("No changes!")
         }
     }
 
