@@ -79,7 +79,7 @@ class ReleaseManager {
         def tags = Tags.parse(getTags())
 
         if (tags.empty) {
-            String tagsChrono = this.script.sh(script: 'git for-each-ref --sort=creatordate --format \'%(refname)=%(objectname:short=7)\' refs/tags', returnStdout: true)
+            String tagsChrono = this.script.sh(script: 'git for-each-ref --sort=creatordate --format \'%(refname)=%(*objectname:short=7)\' refs/tags', returnStdout: true)
             this.script.echo tagsChrono
             tags = Tags.parse(tagsChrono)
         }
