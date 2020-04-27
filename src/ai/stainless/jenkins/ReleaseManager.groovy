@@ -3,6 +3,7 @@ package ai.stainless.jenkins
 import ai.stainless.IllegalBranchNameException
 import ai.stainless.MissingTagException
 import ai.stainless.Semver
+import com.cloudbees.groovy.cps.NonCPS
 
 class ReleaseManager {
 
@@ -187,6 +188,30 @@ class ReleaseManager {
 
     String artifactVersion() {
         return artifact().versionString()
+    }
+
+    /**
+     * Returns true if any files checked into the repo, in the current sub-directory tree, have changed. You can supply
+     * an optional regex filter.
+     * @return
+     */
+    @NonCPS
+    boolean directoryAtThisRootChanged(String regexFilter = null) {
+        println "I'm in directory ${this.script.pwd()}"
+        def changeSet = this.script.currentBuild.changeSets[0]
+        if (changeSet && changeSet.items.size() > 0) {
+            for (change in changeSet.items) {
+                println change.commitId
+                for (path in change.paths) {
+                    println "path=${path.path}"
+                    println "src=${path.src}"
+                    println "editType=${path.editType}"
+                    // is path in cwd
+                }
+            }
+        } else {
+            println "No changes!"
+        }
     }
 
 }
