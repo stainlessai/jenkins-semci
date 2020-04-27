@@ -199,12 +199,17 @@ class ReleaseManager {
      */
     @NonCPS
     boolean directoryAtThisRootChanged(String regexFilter = null) {
-        Path workspacePath = Paths.get(this.script.env.WORKSPACE)
-        Path pwd = Paths.get(this.script.pwd())
-        this.script.echo("I'm in directory ${pwd.toAbsolutePath()}")
-        this.script.echo("Workspace is ${workspacePath.toAbsolutePath()}")
-        Path wd = workspacePath.relativize(pwd)
+        // can't use this in Jenkins, security issue
+//        Path workspacePath = Paths.get(this.script.env.WORKSPACE)
+//        Path pwd = Paths.get(this.script.pwd())
+//        this.script.echo("I'm in directory ${pwd.toAbsolutePath()}")
+//        this.script.echo("Workspace is ${workspacePath.toAbsolutePath()}")
+//        Path wd = workspacePath.relativize(pwd)
+//        this.script.echo("wd is $wd")
+
+        String wd = this.script.pwd().replaceFirst("${this.script.env.WORKSPACE}/",'')
         this.script.echo("wd is $wd")
+        
         // multiple change sets include changes to shared libraries, etc.
         if (this.script.currentBuild.changeSets.size() == 0) {
             this.script.echo("No changes!")
