@@ -5,8 +5,6 @@ import ai.stainless.MissingTagException
 import ai.stainless.Semver
 import com.cloudbees.groovy.cps.NonCPS
 
-import java.nio.file.Path
-
 class ReleaseManager {
 
     private final def script
@@ -198,7 +196,7 @@ class ReleaseManager {
      * @return
      */
     @NonCPS
-    boolean directoryAtThisRootChanged(String regexFilter = null) {
+    boolean changesInThisSubtree(String regexFilter = null) {
         // can't use this in Jenkins, security issue
 //        Path workspacePath = Paths.get(this.script.env.WORKSPACE)
 //        Path pwd = Paths.get(this.script.pwd())
@@ -207,25 +205,39 @@ class ReleaseManager {
 //        Path wd = workspacePath.relativize(pwd)
 //        this.script.echo("wd is $wd")
 
-        String wd = this.script.pwd().replaceFirst("${this.script.env.WORKSPACE}/",'')
+        String wd = this.script.pwd().replaceFirst("${this.script.env.WORKSPACE}/", '')
         this.script.echo("wd is $wd")
-        
+        def changes = []
+
         // multiple change sets include changes to shared libraries, etc.
         if (this.script.currentBuild.changeSets.size() == 0) {
-            this.script.echo("No changes!")
+            this.script.echo("No change sets!")
         } else {
             for (changeSet in this.script.currentBuild.changeSets) {
                 for (change in changeSet.items) {
-                    this.script.echo(change.commitId)
+//                    this.script.echo(change.commitId)
                     for (path in change.paths) {
                         this.script.echo("path=${path.path}")
 //                    this.script.echo("dst=${path.dst}")  // requires admin approval
-                        this.script.echo("src=${path.src}")
-                        this.script.echo("editType=${path.editType}")
+//                        this.script.echo("src=${path.src}")
+//                        this.script.echo("editType=${path.editType}")
                         // is path in cwd
+                        if (path.path.startsWith(wd)) {
+                            if (!regexFilter || (regexFilter && path.path =~ /$regexFilter/)) {
+                                changes.add(path.path)
+                            }
+                        }
                     }
                 }
             }
+            if (changes.empty) {
+                this.script.echo("No changes in subtree ${wd}!")
+            } else {
+                this.script.echo("Detected ${changes.size()} changes in subtree ${wd}")
+                return true
+            }
         }
+
+        return false
     }
 }
