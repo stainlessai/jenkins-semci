@@ -198,21 +198,23 @@ class ReleaseManager {
     @NonCPS
     boolean directoryAtThisRootChanged(String regexFilter = null) {
         this.script.echo("I'm in directory ${this.script.pwd()}")
-        def changeSet = this.script.currentBuild.changeSets[0]
-        if (changeSet && changeSet.items.size() > 0) {
-            for (change in changeSet.items) {
-                this.script.echo(change.commitId)
-                for (path in change.paths) {
-                    this.script.echo("path=${path.path}")
-                    this.script.echo("dst=${path.dst}")
-                    this.script.echo("src=${path.src}")
-                    this.script.echo("editType=${path.editType}")
-                    // is path in cwd
+        this.script.echo("Workspace is ${this.script.env.WORKSPACE}")
+        // multiple change sets include changes to shared libraries, etc.
+        if (this.script.currentBuild.changeSets.size() == 0) {
+            this.script.echo("No changes!")
+        } else {
+            for (changeSet in this.script.currentBuild.changeSets) {
+                for (change in changeSet.items) {
+                    this.script.echo(change.commitId)
+                    for (path in change.paths) {
+                        this.script.echo("path=${path.path}")
+//                    this.script.echo("dst=${path.dst}")  // requires admin approval
+                        this.script.echo("src=${path.src}")
+                        this.script.echo("editType=${path.editType}")
+                        // is path in cwd
+                    }
                 }
             }
-        } else {
-            this.script.echo("No changes!")
         }
     }
-
 }
