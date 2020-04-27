@@ -241,7 +241,8 @@ class ReleaseManager {
                     }
                 }
             }
-            if (changes.empty) {
+            
+            if (changes.size()==0) {
                 this.script.echo("No changes in subtree ${wd}!")
             } else {
                 this.script.echo("Detected ${changes.size()} changes in subtree ${wd}")
