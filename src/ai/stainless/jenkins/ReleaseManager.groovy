@@ -5,6 +5,8 @@ import ai.stainless.MissingTagException
 import ai.stainless.Semver
 import com.cloudbees.groovy.cps.NonCPS
 
+import java.nio.file.Path
+
 class ReleaseManager {
 
     private final def script
@@ -197,8 +199,12 @@ class ReleaseManager {
      */
     @NonCPS
     boolean directoryAtThisRootChanged(String regexFilter = null) {
-        this.script.echo("I'm in directory ${this.script.pwd()}")
-        this.script.echo("Workspace is ${this.script.env.WORKSPACE}")
+        Path workspacePath = Paths.get(this.script.env.WORKSPACE)
+        Path pwd = Paths.get(this.script.pwd())
+        this.script.echo("I'm in directory ${pwd.toAbsolutePath()}")
+        this.script.echo("Workspace is ${workspacePath.toAbsolutePath()}")
+        Path wd = workspacePath.relativize(pwd)
+        this.script.echo("wd is $wd")
         // multiple change sets include changes to shared libraries, etc.
         if (this.script.currentBuild.changeSets.size() == 0) {
             this.script.echo("No changes!")
