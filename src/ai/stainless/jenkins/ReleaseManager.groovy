@@ -109,7 +109,7 @@ class ReleaseManager {
 //        println "lastTagSemverByVersion=$lastTagSemverByVersion"
 //        println "releaseBranchSemver=$releaseBranchSemver"
 //        println "releaseBranchVersion=$releaseBranchVersion"
-        
+
         if (isMasterBranch()) {
             if (commitHash() != lastTagSemverByTime?.objectname) {
                 throw new MissingTagException("No version can be calculated: branch ${script.env.BRANCH_NAME} requires a version tag")
@@ -204,6 +204,7 @@ class ReleaseManager {
                 this.script.echo(change.commitId)
                 for (path in change.paths) {
                     this.script.echo("path=${path.path}")
+                    this.script.echo("dst=${path.dst}")
                     this.script.echo("src=${path.src}")
                     this.script.echo("editType=${path.editType}")
                     // is path in cwd
