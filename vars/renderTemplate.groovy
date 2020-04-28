@@ -10,5 +10,6 @@ import groovy.text.SimpleTemplateEngine
 def call(String input, Map binding) {
     def engine = new SimpleTemplateEngine()
     def template = engine.createTemplate(input).make(binding)
+    echo template.toString()
     return template.toString()
 }
