@@ -128,12 +128,14 @@ class ReleaseManager {
                 releaseBranchVersion.bumpPatch()
             result = releaseBranchVersion
         } else {
-            if (!lastTagSemverByVersion) {
+            if (!lastTagSemverByVersion && prefixFilterRegex != null) {
                 throw new MissingTagException("Prefix provided, but no tags found: '$prefixFilterRegex'")
+            } else if (lastTagSemverByVersion) {
+                result = lastTagSemverByVersion.bumpMinor()
             }
-            result = lastTagSemverByVersion.bumpMinor()
         }
 
+        if (!result) return new Semver().versionString()
         if (!result.major && !result.minor && !result.patch) result.bumpPatch()
         return result.versionString()
     }
@@ -241,8 +243,8 @@ class ReleaseManager {
                     }
                 }
             }
-            
-            if (changes.size()==0) {
+
+            if (changes.size() == 0) {
                 this.script.echo("No changes in subtree ${wd}!")
             } else {
                 this.script.echo("Detected ${changes.size()} changes in subtree ${wd}")

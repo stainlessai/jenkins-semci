@@ -21,11 +21,12 @@ class TestScript {
     }
 }
 
+assert "0.1.0" == new ReleaseManager(new TestScript(BUILD_NUMBER: "1", JOB_NAME: "jobby", BRANCH_NAME: "develop")).buildSemanticVersion()
+
 ReleaseManager.metaClass.getTags = {
     return "blah=schmah\n"
 }
 
-// FIXME throw an error
 def thrown = false
 try {
     assert "0.0.1" == new ReleaseManager(new TestScript(BUILD_NUMBER: "1", JOB_NAME: "jobby", BRANCH_NAME: "master")).buildSemanticVersion()
