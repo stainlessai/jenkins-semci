@@ -123,22 +123,21 @@ pipeline {
 The release manager will examine the build properties, git repo branch and tags and return the expected artifact name and version. 
 For example, if we are working in a repo called "example" with a Jenkins job of "example":
 
-| Branch | Last Tag (by time) | Last Tag (by version) | BUILD_NUMBER | semanticVersion() | artifactName() | artifactVersion() |
-|---|---|---|---|---|---|---|
-| master | (none) | (none) | (any) | ERROR: No tag | ERROR: No tag | ERROR: No tag | 
-| develop | (none) | (none) | 1 | example-0.0.1-1-SNAPSHOT | example-0.0.1-1-SNAPSHOT | 0.0.1-1-SNAPSHOT |
-| master | v1.2.3 | v1.2.3 | (any) | example-v1.2.3 | example-1.2.3 | 1.2.3 |
-| master | myprefix@1.2.3 | myprefix@1.2.3 | (any) | myprefix@1.2.3 | myprefix-1.2.3 | 1.2.3 |
-| develop | myprefix-v1.2.3 | myprefix-v1.2.3 | (any) | myprefix-v1.3.0 | myprefix-1.3.0-develop-SNAPSHOT | 1.3.0-develop-SNAPSHOT
-| v2.0.0 | v1.9.5 | v1.9.5 | (any) | 2.0.0 | example-2.0.0 | 2.0.0 |
-| origin/myprefix@2.0.0 | myprefix@2.0.6 | myprefix@2.0.6 | (any) | myprefix@2.0.6 | myprefix-2.0.6 | 2.0.6 |
-| origin/myprefix@2.1.0 | myprefix@2.0.6 | | (any) | myprefix@2.1.0 | myprefix-2.1.0 | 2.1.0 |
-| origin/myprefix@2.0.1 | (any) | (any) |(any)| ERROR: Invalid branch name | ERROR: Invalid branch name | ERROR: Invalid branch name |
+| Branch | Last Tag (by time) | Last Tag (by version) | BUILD_NUMBER | artifactName() | artifactVersion() |
+|---|---|---|---|---|---|
+| master | (none) | (none) | (any) | ERROR: No tag | ERROR: No tag | 
+| develop | (none) | (none) | 1 | example-0.0.1-1-SNAPSHOT | 0.0.1-1-SNAPSHOT |
+| master | v1.2.3 | v1.2.3 | (any) | example-1.2.3 | 1.2.3 |
+| master | myprefix@1.2.3 | myprefix@1.2.3 | (any) | myprefix-1.2.3 | 1.2.3 |
+| develop | myprefix-v1.2.3 | myprefix-v1.2.3 | (any) | myprefix-1.3.0-develop-SNAPSHOT | 1.3.0-develop-SNAPSHOT
+| v2.0.0 | v1.9.5 | v1.9.5 | (any) | example-2.0.0 | 2.0.0 |
+| origin/myprefix@2.0.0 | myprefix@2.0.6 | myprefix@2.0.6 | (any) | myprefix-2.0.6 | 2.0.6 |
+| origin/myprefix@2.1.0 | myprefix@2.0.6 | | (any) | myprefix-2.1.0 | 2.1.0 |
+| origin/myprefix@2.0.1 | (any) | (any) |(any)| ERROR: Invalid branch name | ERROR: Invalid branch name |
 
 Methods:
 ```$groovy
     ReleaseManager(def script)   // Constructor
-    String semanticVersion()     // Returns the latest semantic version according to the tag history in the underlying repository
     String artifactName()        // Returns the artifact name. Uses the semver prefix if exists, otherwise, the Jenkins JOB_NAME
     String artifactVersion()     // Returns the latest artifact version according to the GitHub branch and tag data
 ```
