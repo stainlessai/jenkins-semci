@@ -6,7 +6,7 @@ Install this as a shared pipeline library for Jenkins. See https://jenkins.io/do
 
 # Methodology & Features
 
-For a detailed description, see [CI/CD Pipeline (PROPOSED)](https://stainlesscode.atlassian.net/wiki/spaces/STAT/pages/560922625/CI+CD+Pipeline+PROPOSED).
+For a detailed description, see [Stainless AI Dev Flow](https://dev-flow.readthedocs.io).
 
 Summary:
 - All released versions are released from a single "master" branch
