@@ -106,7 +106,7 @@ A class that can be imported into a Jenkins pipeline. Due to Jenkins Groovy sand
 to use directly in the pipeline so this class returns `String` objects.
 
 The ReleaseManager uses GitHub branch and tag data to determine what the version of the build is. For a detailed explanation
-of the CI/CD rules that inspired these tools, see [CI/CD Pipeline (PROPOSED)](https://stainlesscode.atlassian.net/wiki/spaces/STAT/pages/560922625/CI+CD+Pipeline+PROPOSED)
+of the CI/CD rules that inspired these tools, see [Stainless AI Dev Flow](https://dev-flow.readthedocs.io)
 
 You can pass the values returned by these methods into your build script to set the filename, for example:
 
