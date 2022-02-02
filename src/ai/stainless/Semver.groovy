@@ -14,10 +14,12 @@ class Semver implements Comparable<Semver> {
     def preReleaseDelim = '-'
     def v = null
     int major = 0
-    int minor = 0
-    int patch = 1
+    int minor = 1
+    int patch = 0
     def prerelease
     def objectname
+    // anything after plus sign
+    def buildMetadata
 
     @NonCPS
     static def nullIfEmpty(string) {
@@ -79,7 +81,8 @@ class Semver implements Comparable<Semver> {
                     major:matcher.group(5) as int,
                     minor: matcher.group(6) as int,
                     patch: matcher.group(7) as int,
-                    prerelease: matcher.group(8))
+                    prerelease: matcher.group(8),
+                    buildMetadata: matcher.group(9))
         }
 
         if (!ignoreErrors) throw new IllegalArgumentException("Unable to parse semantic version string: $semverString")

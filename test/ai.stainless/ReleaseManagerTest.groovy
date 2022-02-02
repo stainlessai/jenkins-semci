@@ -1,6 +1,7 @@
 import ai.stainless.IllegalBranchNameException
 import ai.stainless.MissingTagException
 import ai.stainless.jenkins.ReleaseManager
+import ai.stainless.Semver
 
 class TestScript {
     public TestScript(Map env) {
@@ -21,8 +22,24 @@ class TestScript {
     }
 }
 
+ReleaseManager.metaClass.getTags = {
+    return ""
+}
+
 assert "0.1.0" == new ReleaseManager(new TestScript(BUILD_NUMBER: "1", JOB_NAME: "jobby", BRANCH_NAME: "develop")).buildSemanticVersion()
 
+def rtest1 = new ReleaseManager(new TestScript(BUILD_NUMBER: "1", JOB_NAME: "jobby", BRANCH_NAME: "develop"))
+assert "0.1.0-1-develop-SNAPSHOT" == rtest1.artifactVersion()
+rtest1.usePlusBeforeBuildNumber = true
+assert "0.1.0-develop-SNAPSHOT+1" == rtest1.artifactVersion()
+rtest1.usePlusBeforeBuildNumber = false
+rtest1.includeSnapshotIdentifier = false
+assert "0.1.0-1-develop" == rtest1.artifactVersion()
+rtest1.usePlusBeforeBuildNumber = true
+rtest1.includeSnapshotIdentifier = false
+assert "0.1.0-develop+1" == rtest1.artifactVersion()
+
+                                            
 ReleaseManager.metaClass.getTags = {
     return "blah=schmah\n"
 }

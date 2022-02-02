@@ -25,6 +25,17 @@ class ReleaseManager {
      */
     def prefixFilterRegex = null
 
+    /**
+     * Include the word "SNAPSHOT" for snapshot (non-master) builds. This is common for Java builds.
+     */
+    def includeSnapshotIdentifier = true
+
+    /**
+     * The build number is typically specified using the plus sign in semantic versions, e.g., 1.2.3+12. If this
+     * is true, use that format; otherwise, include it in the prerelease after a dash '-'.
+     */
+    def usePlusBeforeBuildNumber = false
+
     ReleaseManager(def script) {
         this.script = script
     }
@@ -64,7 +75,9 @@ class ReleaseManager {
      * here in default form.
      */
     def getTags() {
-        return ""
+        String tagsChrono = this.script.sh(script: 'git for-each-ref --sort=creatordate --format \'%(refname)=%(*objectname:short=7)\' refs/tags', returnStdout: true)
+        this.script.echo tagsChrono
+        return Tags.parse(tagsChrono)
     }
 
     /**
@@ -77,13 +90,7 @@ class ReleaseManager {
      */
     String buildSemanticVersion(boolean allowNonZeroPatchBranches = false) {
         def tags = Tags.parse(getTags())
-
-        if (tags.empty) {
-            String tagsChrono = this.script.sh(script: 'git for-each-ref --sort=creatordate --format \'%(refname)=%(*objectname:short=7)\' refs/tags', returnStdout: true)
-            this.script.echo tagsChrono
-            tags = Tags.parse(tagsChrono)
-        }
-
+        
         if (tags.empty) {
             this.script.echo "WARNING: No tags found for build (this may not be a problem)"
         } // no tags!
@@ -169,12 +176,34 @@ class ReleaseManager {
      */
     private Semver artifact() {
         def semver = Semver.parse(buildSemanticVersion())
-
+        
+        //
+        // FIXME refactor to a Formatter class
+        //
         if (!isMasterBranch()) {
             if (!isReleaseBranch()) {
-                semver.prerelease = "${script.env.BUILD_NUMBER}-${script.env.BRANCH_NAME}-SNAPSHOT"
+                if (usePlusBeforeBuildNumber) {
+                    semver.prerelease = "${script.env.BRANCH_NAME}"
+                    if (includeSnapshotIdentifier) {
+                        semver.prerelease += "-SNAPSHOT"
+                    }
+                    semver.prerelease += "+${script.env.BUILD_NUMBER}"
+                } else {
+                    semver.prerelease = "${script.env.BUILD_NUMBER}-${script.env.BRANCH_NAME}"
+                    if (includeSnapshotIdentifier) {
+                        semver.prerelease += "-SNAPSHOT"
+                    }
+                }
             } else {
-                semver.prerelease = "${script.env.BUILD_NUMBER}-SNAPSHOT"
+                if (usePlusBeforeBuildNumber) {
+                    semver.prerelease = "+${script.env.BUILD_NUMBER}"
+                } else {
+                    semver.prerelease = "${script.env.BUILD_NUMBER}"
+                }
+
+                if (includeSnapshotIdentifier) {
+                    semver.prerelease += "-SNAPSHOT"
+                }
             }
         }
 
