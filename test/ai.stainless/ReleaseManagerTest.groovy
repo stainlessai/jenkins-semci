@@ -28,6 +28,8 @@ def s = new Semver(prerelease: 'mybranch', buildMetadata: 'mybuildnumber')
 assert SemverFormatter.ofPattern("M.m.p'-'P'-SNAPSHOT'").format(s) == '0.1.0-mybranch-SNAPSHOT'
 assert SemverFormatter.ofPattern("M.m.p'-'B'-'P'-SNAPSHOT'").format(s) == '0.1.0-mybuildnumber-mybranch-SNAPSHOT'
 assert SemverFormatter.ofPattern("M.m.p'+'B").format(s) == '0.1.0+mybuildnumber'
+assert SemverFormatter.ofPattern("M.m.p'+'P.B").format(s) == '0.1.0+mybranch.mybuildnumber'
+
 try {
     SemverFormatter.ofPattern("M.m.p'+'Z").format(s)
 } catch (Exception e) {
