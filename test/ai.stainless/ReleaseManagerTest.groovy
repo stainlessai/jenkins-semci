@@ -1,7 +1,8 @@
 import ai.stainless.IllegalBranchNameException
 import ai.stainless.MissingTagException
-import ai.stainless.jenkins.ReleaseManager
 import ai.stainless.Semver
+import ai.stainless.SemverFormatter
+import ai.stainless.jenkins.ReleaseManager
 
 class TestScript {
     public TestScript(Map env) {
@@ -17,10 +18,23 @@ class TestScript {
         cmd.waitFor()
         return out.toString()
     }
+
     def echo(str) {
         println str
     }
 }
+
+def s = new Semver(prerelease: 'mybranch', buildMetadata: 'mybuildnumber')
+assert SemverFormatter.ofPattern("M.m.p'-'P'-SNAPSHOT'").format(s) == '0.1.0-mybranch-SNAPSHOT'
+assert SemverFormatter.ofPattern("M.m.p'-'B'-'P'-SNAPSHOT'").format(s) == '0.1.0-mybuildnumber-mybranch-SNAPSHOT'
+assert SemverFormatter.ofPattern("M.m.p'+'B").format(s) == '0.1.0+mybuildnumber'
+try {
+    SemverFormatter.ofPattern("M.m.p'+'Z").format(s)
+} catch (Exception e) {
+    assert e.message.startsWith('Bad')
+}
+s = new Semver()
+assert SemverFormatter.ofPattern("M.m.p'-'B'-'P'-SNAPSHOT'").format(s) == '0.1.0---SNAPSHOT'
 
 ReleaseManager.metaClass.getTags = {
     return ""
@@ -30,16 +44,13 @@ assert "0.1.0" == new ReleaseManager(new TestScript(BUILD_NUMBER: "1", JOB_NAME:
 
 def rtest1 = new ReleaseManager(new TestScript(BUILD_NUMBER: "1", JOB_NAME: "jobby", BRANCH_NAME: "develop"))
 assert "0.1.0-1-develop-SNAPSHOT" == rtest1.artifactVersion()
-rtest1.usePlusBeforeBuildNumber = true
-assert "0.1.0-develop-SNAPSHOT+1" == rtest1.artifactVersion()
-rtest1.usePlusBeforeBuildNumber = false
-rtest1.includeSnapshotIdentifier = false
-assert "0.1.0-1-develop" == rtest1.artifactVersion()
-rtest1.usePlusBeforeBuildNumber = true
-rtest1.includeSnapshotIdentifier = false
-assert "0.1.0-develop+1" == rtest1.artifactVersion()
+rtest1.prerelease = "SNAPSHOT"
+assert "0.1.0-SNAPSHOT" == rtest1.artifactVersion()
+rtest1.prerelease = ""
+assert "0.1.0" == rtest1.artifactVersion()
+rtest1.buildMetadata = "3aaaaaa"
+assert "0.1.0+3aaaaaa" == rtest1.artifactVersion()
 
-                                            
 ReleaseManager.metaClass.getTags = {
     return "blah=schmah\n"
 }
@@ -166,7 +177,7 @@ assert "2.0.0" == new ReleaseManager(new TestScript(BUILD_NUMBER: "19", JOB_NAME
 //
 
 ReleaseManager.metaClass.getTags = {
-return '''
+    return '''
 refs/tags/prefix2@2.0.0=0123456
 refs/tags/prefix2@2.0.1=0123457
 refs/tags/prefix2@2.0.2=0123458
@@ -180,8 +191,8 @@ refs/tags/prefix1-v1.1.0=0123450
 '''
 }
 
-assert "2.2.0" == new ReleaseManager(new TestScript(BUILD_NUMBER: "20", JOB_NAME: "jobby", BRANCH_NAME: "develop"),"prefix2").buildSemanticVersion()
-assert "1.2.0" == new ReleaseManager(new TestScript(BUILD_NUMBER: "21", JOB_NAME: "jobby", BRANCH_NAME: "develop"),"prefix1").buildSemanticVersion()
+assert "2.2.0" == new ReleaseManager(new TestScript(BUILD_NUMBER: "20", JOB_NAME: "jobby", BRANCH_NAME: "develop"), "prefix2").buildSemanticVersion()
+assert "1.2.0" == new ReleaseManager(new TestScript(BUILD_NUMBER: "21", JOB_NAME: "jobby", BRANCH_NAME: "develop"), "prefix1").buildSemanticVersion()
 
 //
 // java.lang.NullPointerException: Cannot invoke method bumpMinor() on null object
@@ -202,7 +213,7 @@ ReleaseManager.metaClass.getTags = {
 
 thrown = false
 try {
-    assert "0.0.1" == new ReleaseManager(new TestScript(BUILD_NUMBER: "21", JOB_NAME: "jobby", BRANCH_NAME: "develop"),"^prefix1").buildSemanticVersion()
+    assert "0.0.1" == new ReleaseManager(new TestScript(BUILD_NUMBER: "21", JOB_NAME: "jobby", BRANCH_NAME: "develop"), "^prefix1").buildSemanticVersion()
 } catch (MissingTagException e) {
     thrown = true
     assert e.message =~ /^Prefix provided/
@@ -225,10 +236,10 @@ refs/tags/prefix1-v0.1.7=8fff2ea
 refs/tags/prefix1-v0.1.5=7cf62ad
 '''
 }
-    
+
 thrown = false
 try {
-    assert "0.2.0" == new ReleaseManager(new TestScript(BUILD_NUMBER: "21", JOB_NAME: "jobby", BRANCH_NAME: "develop"),"prefix1").buildSemanticVersion()
+    assert "0.2.0" == new ReleaseManager(new TestScript(BUILD_NUMBER: "21", JOB_NAME: "jobby", BRANCH_NAME: "develop"), "prefix1").buildSemanticVersion()
 } catch (MissingTagException e) {
     thrown = true
     assert e.message =~ /^Prefix provided/

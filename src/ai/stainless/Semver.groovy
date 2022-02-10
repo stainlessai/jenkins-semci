@@ -16,10 +16,10 @@ class Semver implements Comparable<Semver> {
     int major = 0
     int minor = 1
     int patch = 0
-    def prerelease
-    def objectname
+    def prerelease = ''
+    def objectname = ''
     // anything after plus sign
-    def buildMetadata
+    def buildMetadata = ''
 
     @NonCPS
     static def nullIfEmpty(string) {
@@ -126,17 +126,23 @@ class Semver implements Comparable<Semver> {
 
     @NonCPS
     String toString() {
-        return "${this.fullPrefix()}${v?:''}$major.$minor.$patch${this.fullPreRelease()}"
+        return "${this.fullPrefix()}-${SemverFormatter.ofPattern("M.m.p'-'?P'+'?B").format(this)}"
     }
 
     @NonCPS
+    @Deprecated
     String artifactName() {
-        return "${this.fullPrefix()}-$major.$minor.$patch${this.fullPreRelease()}"
+        return "${this.fullPrefix()}-${versionString()}"
     }
 
+    /**
+     * @deprecated - use a SemverFormatter instead
+     * @return
+     */
     @NonCPS
+    @Deprecated
     String versionString() {
-        return "$major.$minor.$patch${this.fullPreRelease()}"
+        return "$major.$minor.$patch${this.fullPreRelease()}${buildMetadata?'+'+buildMetadata:''}"
     }
 
     // Use of this method will be rejected by Jenkins' Groovy sandbox

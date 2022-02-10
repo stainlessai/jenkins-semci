@@ -3,6 +3,7 @@ package ai.stainless.jenkins
 import ai.stainless.IllegalBranchNameException
 import ai.stainless.MissingTagException
 import ai.stainless.Semver
+import ai.stainless.SemverFormatter
 import com.cloudbees.groovy.cps.NonCPS
 
 class ReleaseManager {
@@ -31,10 +32,17 @@ class ReleaseManager {
     def includeSnapshotIdentifier = true
 
     /**
-     * The build number is typically specified using the plus sign in semantic versions, e.g., 1.2.3+12. If this
-     * is true, use that format; otherwise, include it in the prerelease after a dash '-'.
+     * GString describing the content of the buildMetadata. Can be set in the Jenkins pipeline to a project-specific
+     * value. If nonempty, will be rendered after a plus sign in the semantic version.
      */
-    def usePlusBeforeBuildNumber = false
+    def buildMetadata = ""
+
+    /**
+     * GString describing the content of the pre-release string. Can be set in the Jenkins pipeline to a project-specific
+     * value. If nonempty, will be rendered after a dash sign in the semantic version, and before any build metadata.
+     * Note: this is different for release branches (branch name is excluded)
+     */
+    def prerelease = "${script.env.BUILD_NUMBER}-${script.env.BRANCH_NAME}-SNAPSHOT"
 
     ReleaseManager(def script) {
         this.script = script
@@ -90,7 +98,7 @@ class ReleaseManager {
      */
     String buildSemanticVersion(boolean allowNonZeroPatchBranches = false) {
         def tags = Tags.parse(getTags())
-        
+
         if (tags.empty) {
             this.script.echo "WARNING: No tags found for build (this may not be a problem)"
         } // no tags!
@@ -176,37 +184,21 @@ class ReleaseManager {
      */
     private Semver artifact() {
         def semver = Semver.parse(buildSemanticVersion())
-        
-        //
-        // FIXME refactor to a Formatter class
-        //
         if (!isMasterBranch()) {
             if (!isReleaseBranch()) {
-                if (usePlusBeforeBuildNumber) {
-                    semver.prerelease = "${script.env.BRANCH_NAME}"
-                    if (includeSnapshotIdentifier) {
-                        semver.prerelease += "-SNAPSHOT"
-                    }
-                    semver.prerelease += "+${script.env.BUILD_NUMBER}"
-                } else {
-                    semver.prerelease = "${script.env.BUILD_NUMBER}-${script.env.BRANCH_NAME}"
-                    if (includeSnapshotIdentifier) {
-                        semver.prerelease += "-SNAPSHOT"
-                    }
+                if (!prerelease.toString().empty) {
+                    semver.prerelease = prerelease
                 }
             } else {
-                if (usePlusBeforeBuildNumber) {
-                    semver.prerelease = "+${script.env.BUILD_NUMBER}"
-                } else {
-                    semver.prerelease = "${script.env.BUILD_NUMBER}"
-                }
-
-                if (includeSnapshotIdentifier) {
-                    semver.prerelease += "-SNAPSHOT"
+                if (!prerelease.toString().empty) {
+                    semver.prerelease = "${script.env.BUILD_NUMBER}-SNAPSHOT"
                 }
             }
-        }
 
+            if (!buildMetadata.toString().empty) {
+                semver.buildMetadata = buildMetadata
+            }
+        }
         // if version == 0.0.0 make it 0.0.1
         if (!semver.prefix) semver.prefix = script.env.JOB_NAME
         semver.v = null // don't add "v" to artifact name
@@ -214,11 +206,11 @@ class ReleaseManager {
     }
 
     String artifactName() {
-        return artifact().artifactName()
+        return artifact().toString()
     }
 
     String artifactVersion() {
-        return artifact().versionString()
+        return SemverFormatter.ofPattern("M.m.p'-'?P'+'?B").format(artifact())
     }
 
     /**
