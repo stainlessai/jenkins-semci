@@ -98,7 +98,7 @@ class ReleaseManager {
      * @return
      */
     String buildSemanticVersion(boolean allowNonZeroPatchBranches = false) {
-        def tags = Tags.parse(getTags())
+        def tags = getTags()
 
         if (tags.empty) {
             this.script.echo "WARNING: No tags found for build (this may not be a problem)"
