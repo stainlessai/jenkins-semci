@@ -5,6 +5,7 @@ import ai.stainless.MissingTagException
 import ai.stainless.Semver
 import ai.stainless.SemverFormatter
 import com.cloudbees.groovy.cps.NonCPS
+import groovy.text.GStringTemplateEngine
 
 class ReleaseManager {
 
@@ -35,14 +36,14 @@ class ReleaseManager {
      * GString describing the content of the buildMetadata. Can be set in the Jenkins pipeline to a project-specific
      * value. If nonempty, will be rendered after a plus sign in the semantic version.
      */
-    def buildMetadata = ""
+    String buildMetadata = ""
 
     /**
      * GString describing the content of the pre-release string. Can be set in the Jenkins pipeline to a project-specific
      * value. If nonempty, will be rendered after a dash sign in the semantic version, and before any build metadata.
      * Note: this is different for release branches (branch name is excluded)
      */
-    def prerelease = "${script.env.BUILD_NUMBER}-${script.env.BRANCH_NAME}-SNAPSHOT"
+    String prerelease = '${env.BUILD_NUMBER}-${env.BRANCH_NAME}-SNAPSHOT'
 
     ReleaseManager(def script) {
         this.script = script
@@ -184,14 +185,16 @@ class ReleaseManager {
      */
     private Semver artifact() {
         def semver = Semver.parse(buildSemanticVersion())
+        def env = script.env
         if (!isMasterBranch()) {
             if (!isReleaseBranch()) {
                 if (!prerelease.toString().empty) {
-                    semver.prerelease = prerelease
+                    semver.prerelease = new GStringTemplateEngine().createTemplate(prerelease).make(['env':env]).toString()
                 }
             } else {
                 if (!prerelease.toString().empty) {
-                    semver.prerelease = "${script.env.BUILD_NUMBER}-SNAPSHOT"
+                    def templ = '${env.BUILD_NUMBER}-SNAPSHOT'
+                    semver.prerelease = new GStringTemplateEngine().createTemplate(templ).make(['env':env]).toString()
                 }
             }
 
@@ -204,7 +207,7 @@ class ReleaseManager {
         semver.v = null // don't add "v" to artifact name
         return semver
     }
-
+    
     String artifactName() {
         return artifact().toString()
     }
