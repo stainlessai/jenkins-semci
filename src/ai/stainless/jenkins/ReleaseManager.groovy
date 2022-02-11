@@ -285,4 +285,12 @@ class ReleaseManager {
         this.script.echo("Was this build triggered manually? $triggeredManually")
         return changesInSubtree(wd, regexFilter) || triggeredManually
     }
+
+    public void setPrerelease(String prerelease) {
+        this.prerelease = prerelease
+    }
+
+    public void setBuildMetadata(String buildMetadata) {
+        this.buildMetadata = buildMetadata
+    }
 }

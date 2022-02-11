@@ -180,8 +180,8 @@ environment. For example:
 
  ```
 def releaseManager = new ReleaseManager(this)
-releaseManager.prerelease = '${env.BRANCH_NAME}'
-releaseManager.buildMetadata = '${env.BUILD_NUMBER}'
+releaseManager.setPrerelease('${env.BRANCH_NAME}')
+releaseManager.setBuildMetadata('${env.BUILD_NUMBER}')
  ```
 
 This configuration will create versions of the form `1.2.3-mybranch+buildnumber`
