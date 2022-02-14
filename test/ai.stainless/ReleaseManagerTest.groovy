@@ -53,6 +53,8 @@ rtest1.prerelease = ""
 assert "0.1.0" == rtest1.artifactVersion()
 rtest1.buildMetadata = "3aaaaaa"
 assert "0.1.0+3aaaaaa" == rtest1.artifactVersion()
+rtest1.buildMetadata = "%BUILD_NUMBER%"
+assert "0.1.0+1" == rtest1.artifactVersion()
 
 ReleaseManager.metaClass.getTags = {
     return Tags.parse("blah=schmah\n")

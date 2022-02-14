@@ -199,8 +199,8 @@ class ReleaseManager {
                 }
             }
 
-            if (!buildMetadata.toString().empty) {
-                semver.buildMetadata = buildMetadata
+            if (buildMetadata != null && !buildMetadata.toString().empty) {
+                semver.buildMetadata = replaceAll(buildMetadata, envMap())
             }
         }
         // if version == 0.0.0 make it 0.0.1
