@@ -180,9 +180,11 @@ environment. For example:
 
  ```
 def releaseManager = new ReleaseManager(this)
-releaseManager.setPrerelease('${env.BRANCH_NAME}')
-releaseManager.setBuildMetadata('${env.BUILD_NUMBER}')
+releaseManager.setPrerelease('%BRANCH_NAME%')
+releaseManager.setBuildMetadata('%BUILD_NUMBER%')
  ```
 
-This configuration will create versions of the form `1.2.3-mybranch+buildnumber`
+This configuration will create versions of the form `1.2.3-mybranch+buildnumber`. You can append custom strings, just 
+ensure they adhere to the semantic versioning standard. Any strings surrounded by '%' will be treated as variables, as
+of this writing, only %BUILD_NUMBER% and %BRANCH_NAME% are supported.
 
