@@ -5,7 +5,6 @@ import ai.stainless.MissingTagException
 import ai.stainless.Semver
 import ai.stainless.SemverFormatter
 import com.cloudbees.groovy.cps.NonCPS
-import groovy.text.GStringTemplateEngine
 
 class ReleaseManager {
 
@@ -25,7 +24,7 @@ class ReleaseManager {
     /**
      * A prefix filter regex for branches and tags. If null will just use full tag or branch list.
      */
-    def prefixFilterRegex = null
+    def prefixFilterRegex = ''
 
     /**
      * Include the word "SNAPSHOT" for snapshot (non-master) builds. This is common for Java builds.
@@ -43,7 +42,7 @@ class ReleaseManager {
      * value. If nonempty, will be rendered after a dash sign in the semantic version, and before any build metadata.
      * Note: this is different for release branches (branch name is excluded)
      */
-    String prerelease = '${env.BUILD_NUMBER}-${env.BRANCH_NAME}-SNAPSHOT'
+    String prerelease = '%BUILD_NUMBER%-%BRANCH_NAME%-SNAPSHOT'
 
     ReleaseManager(def script) {
         this.script = script
@@ -98,7 +97,7 @@ class ReleaseManager {
      * @return
      */
     String buildSemanticVersion(boolean allowNonZeroPatchBranches = false) {
-        def tags = getTags()
+        Tags tags = getTags()
 
         if (tags.empty) {
             this.script.echo "WARNING: No tags found for build (this may not be a problem)"
@@ -127,6 +126,8 @@ class ReleaseManager {
 //        println "releaseBranchVersion=$releaseBranchVersion"
 
         if (isMasterBranch()) {
+//            println commitHash()
+//            println lastTagSemverByTime?.objectname
             if (commitHash() != lastTagSemverByTime?.objectname) {
                 throw new MissingTagException("No version can be calculated: branch ${script.env.BRANCH_NAME} requires a version tag")
             }
@@ -144,7 +145,7 @@ class ReleaseManager {
                 releaseBranchVersion.bumpPatch()
             result = releaseBranchVersion
         } else {
-            if (!lastTagSemverByVersion && prefixFilterRegex != null) {
+            if (!lastTagSemverByVersion && (prefixFilterRegex != null && !prefixFilterRegex.empty)) {
                 throw new MissingTagException("Prefix provided, but no tags found: '$prefixFilterRegex'")
             } else if (lastTagSemverByVersion) {
                 result = lastTagSemverByVersion.bumpMinor()
@@ -189,12 +190,12 @@ class ReleaseManager {
         if (!isMasterBranch()) {
             if (!isReleaseBranch()) {
                 if (!prerelease.toString().empty) {
-                    semver.prerelease = new GStringTemplateEngine().createTemplate(prerelease).make(['env':env]).toString()
+                    semver.prerelease = replaceAll(prerelease, envMap())
                 }
             } else {
                 if (!prerelease.toString().empty) {
-                    def templ = '${env.BUILD_NUMBER}-SNAPSHOT'
-                    semver.prerelease = new GStringTemplateEngine().createTemplate(templ).make(['env':env]).toString()
+                    def templ = '%BUILD_NUMBER%-SNAPSHOT'
+                    semver.prerelease = replaceAll(templ, envMap())
                 }
             }
 
@@ -207,7 +208,19 @@ class ReleaseManager {
         semver.v = null // don't add "v" to artifact name
         return semver
     }
-    
+
+    public Map<String, String> envMap() {
+        return ['BUILD_NUMBER':script.env['BUILD_NUMBER'], 'BRANCH_NAME':script.env['BRANCH_NAME']]
+    }
+
+    public static String replaceAll(String text, Map<String, String> params) {
+        for (entry in params) {
+            text = text.replaceAll("%"+entry.key+"%", entry.value)
+        }
+        return text
+    }
+
+
     String artifactName() {
         return artifact().toString()
     }
