@@ -23,7 +23,7 @@ class Semver implements Comparable<Semver> {
 
     @NonCPS
     static def nullIfEmpty(string) {
-        if (!string || string.length()==0) return null
+        if (!string || string.length() == 0) return null
         string
     }
 
@@ -62,7 +62,7 @@ class Semver implements Comparable<Semver> {
     static Semver parse(String semverString, boolean ignoreErrors = false) {
 //        if (ignoreErrors && !semverString) return null;
 //        else if (!semverString) throw new IllegalArgumentException("Can't to parse null semverString")
-        
+
         def matcher = semverString =~ REGEX
 
         if (matcher.matches()) {
@@ -70,15 +70,15 @@ class Semver implements Comparable<Semver> {
 //                println "$it": matcher.group(it)
 //            }
 
-            def delim = matcher.group(4)?nullIfEmpty(matcher.group(4)):null
-            def prefix = matcher.group(2)?nullIfEmpty(matcher.group(2)):null
+            def delim = matcher.group(4) ? nullIfEmpty(matcher.group(4)) : null
+            def prefix = matcher.group(2) ? nullIfEmpty(matcher.group(2)) : null
 
             // crop off trailing '-' if delimiter=='v', should be able to do this with regex tbh
-            if (delim?.equalsIgnoreCase('v') && prefix?.endsWith('-')) prefix = prefix[0..prefix.length()-2]
+            if (delim?.equalsIgnoreCase('v') && prefix?.endsWith('-')) prefix = prefix[0..prefix.length() - 2]
 
-            return new Semver(prefix:prefix,
+            return new Semver(prefix: prefix,
                     v: delim,
-                    major:matcher.group(5) as int,
+                    major: matcher.group(5) as int,
                     minor: matcher.group(6) as int,
                     patch: matcher.group(7) as int,
                     prerelease: matcher.group(8),
@@ -97,10 +97,15 @@ class Semver implements Comparable<Semver> {
     static Semver fromRef(String ref, boolean ignoreErrors = false) {
         def spl = []
         def path = null
+        if (ref == null && !ignoreErrors) {
+            throw new IllegalArgumentException("Can't create a Semver from a null ref")
+        } else if (ref == null) {
+            return new Semver()
+        }
         if (ref.contains('/')) {
             spl = ref.split('/')
-            ref = spl.size()==0?null:spl.last()
-            path = spl[0..spl.size()-2].join('/')
+            ref = spl.size() == 0 ? null : spl.last()
+            path = spl[0..spl.size() - 2].join('/')
         } // branch can start with a path
 
         def semver = Semver.parse(ref, ignoreErrors)
@@ -113,7 +118,7 @@ class Semver implements Comparable<Semver> {
 
     @NonCPS
     String fullPrefix() {
-        if (prefix && v && v=='v') return "$prefix$prefixDelim"
+        if (prefix && v && v == 'v') return "$prefix$prefixDelim"
         else if (prefix) return "$prefix"
         return ''
     }
@@ -142,13 +147,13 @@ class Semver implements Comparable<Semver> {
     @NonCPS
     @Deprecated
     String versionString() {
-        return "$major.$minor.$patch${this.fullPreRelease()}${buildMetadata?'+'+buildMetadata:''}"
+        return "$major.$minor.$patch${this.fullPreRelease()}${buildMetadata ? '+' + buildMetadata : ''}"
     }
 
     // Use of this method will be rejected by Jenkins' Groovy sandbox
     @NonCPS
     Map toMap() {
-        this.properties.subMap(['path','prefix','v','major','minor','patch','prerelease','objectname'])
+        this.properties.subMap(['path', 'prefix', 'v', 'major', 'minor', 'patch', 'prerelease', 'objectname'])
     }
 
     // FIXME CPS problems running this on Jenkins

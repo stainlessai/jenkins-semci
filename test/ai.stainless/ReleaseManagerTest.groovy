@@ -25,6 +25,12 @@ class TestScript {
     }
 }
 
+try {
+    println Semver.parse(null)
+} catch (Exception e) {
+    assert e.message == 'Unable to parse semantic version string: null'
+}
+
 def s = new Semver(prerelease: 'mybranch', buildMetadata: 'mybuildnumber')
 assert SemverFormatter.ofPattern("M.m.p'-'P'-SNAPSHOT'").format(s) == '0.1.0-mybranch-SNAPSHOT'
 assert SemverFormatter.ofPattern("M.m.p'-'B'-'P'-SNAPSHOT'").format(s) == '0.1.0-mybuildnumber-mybranch-SNAPSHOT'
