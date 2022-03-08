@@ -230,7 +230,7 @@ class ReleaseManager {
     }
 
     public Map<String, String> envMap() {
-        return ['BUILD_NUMBER':script.env['BUILD_NUMBER'], 'BRANCH_NAME':script.env['BRANCH_NAME']]
+        return ['BUILD_NUMBER':script.env['BUILD_NUMBER'], 'BRANCH_NAME':getBranchName()]
     }
 
     public static String replaceAll(String text, Map<String, String> params) {
