@@ -44,7 +44,7 @@ class ReleaseManager {
      */
     String prerelease = '%BUILD_NUMBER%-%BRANCH_NAME%-SNAPSHOT'
 
-    def branchName = null
+    def _branchName = null
 
     ReleaseManager(def script) {
         this.script = script
@@ -79,11 +79,15 @@ class ReleaseManager {
     String getBranchName() {
         if (script.env.BRANCH_NAME != null) {
             return script.env.BRANCH_NAME
-        } else if (this.branchName != null) {
-            return this.branchName
+        } else if (this._branchName != null) {
+            return this._branchName
         } else {
             throw new IllegalArgumentException("Branch name not found in environment, must be set manually using setBranchName()")
         }
+    }
+
+    void setBranchName(String branchName) {
+        this._branchName = branchName
     }
 
     boolean isMasterBranch() {
