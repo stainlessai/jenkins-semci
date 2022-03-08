@@ -44,6 +44,8 @@ class ReleaseManager {
      */
     String prerelease = '%BUILD_NUMBER%-%BRANCH_NAME%-SNAPSHOT'
 
+    def branchName = null
+
     ReleaseManager(def script) {
         this.script = script
     }
@@ -70,12 +72,26 @@ class ReleaseManager {
         content.substring(0, Math.min(maxLength, content.length())).trim()
     }
 
+    /**
+     * Get the branch name from the script environment if it's available, throw a meaningful error if not
+     * @return
+     */
+    String getBranchName() {
+        if (script.env.BRANCH_NAME != null) {
+            return script.env.BRANCH_NAME
+        } else if (this.branchName != null) {
+            return this.branchName
+        } else {
+            throw new IllegalArgumentException("Branch name not found in environment, must be set manually using setBranchName()")
+        }
+    }
+
     boolean isMasterBranch() {
-        script.env.BRANCH_NAME == masterBranch
+        getBranchName() == masterBranch
     }
 
     boolean isReleaseBranch() {
-        return checkReleaseBranch(script.env.BRANCH_NAME)
+        return checkReleaseBranch(getBranchName())
     }
 
     /**
@@ -107,7 +123,7 @@ class ReleaseManager {
         def lastTagSemverByTime = tags.toSemverList(prefixFilterRegex)?.last()
         def lastTagSemverByVersion = tags.sortedByVersion(prefixFilterRegex)?.last()
         // sort by natural order
-        def releaseBranchSemver = Semver.fromRef(script.env.BRANCH_NAME, true)
+        def releaseBranchSemver = Semver.fromRef(getBranchName(), true)
 
         def lastTaggedSemverOnThisReleaseBranch = tags.findAllByMajorAndMinorAndPrefixFilter(releaseBranchSemver.major, releaseBranchSemver.minor, prefixFilterRegex)?.last()
         def releaseBranchVersion = releaseBranchSemver
@@ -117,7 +133,7 @@ class ReleaseManager {
             releaseBranchVersion = Tags.sortByVersion([lastTaggedSemverOnThisReleaseBranch, releaseBranchSemver]).last()
         }
 
-//        println "branch=${script.env.BRANCH_NAME}"
+//        println "branch=${getBranchName()}"
 //        println "prefixFilterRegex=${prefixFilterRegex}"
 //        println "tags=${tags.tags}"
 //        println "lastTagSemverByTime=$lastTagSemverByTime"
@@ -129,7 +145,7 @@ class ReleaseManager {
 //            println commitHash()
 //            println lastTagSemverByTime?.objectname
             if (commitHash() != lastTagSemverByTime?.objectname) {
-                throw new MissingTagException("No version can be calculated: branch ${script.env.BRANCH_NAME} requires a version tag")
+                throw new MissingTagException("No version can be calculated: branch ${getBranchName()} requires a version tag")
             }
 
             return lastTagSemverByTime.versionString()
@@ -138,7 +154,7 @@ class ReleaseManager {
         def result
         if (isReleaseBranch()) {
             if (!allowNonZeroPatchBranches && releaseBranchSemver.patch > 0)
-                throw new IllegalBranchNameException("Patch is not zero: ${script.env.BRANCH_NAME}")
+                throw new IllegalBranchNameException("Patch is not zero: ${getBranchName()}")
             // only bump patch if there is no patch tag > 0 on this branch
 //            println "diff=${releaseBranchVersion-lastTagSemverByVersion}"
             if (lastTagSemverByTime && (releaseBranchVersion - lastTagSemverByVersion == 0))
