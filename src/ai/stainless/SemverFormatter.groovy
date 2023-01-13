@@ -62,7 +62,7 @@ class SemverFormatter {
                 else if (c == 'p') template += semver.patch
                 else if (c == 'B') {
 //                    println "in B with $buf"
-                    if (!buf.empty && semver.buildMetadata && !semver.buildMetadata?.empty) {
+                    if (!buf.isEmpty() && semver.buildMetadata && !semver.buildMetadata?.isEmpty()) {
                         template += buf
                         buf = ''
                     }
@@ -94,7 +94,7 @@ class SemverFormatter {
             }
         }
 
-        if (!buf.empty && !emptyOmit) {
+        if (!buf.isEmpty() && !emptyOmit) {
             template += buf
         }
 
