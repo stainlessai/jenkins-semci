@@ -134,6 +134,17 @@ class Semver implements Comparable<Semver> {
         return "${this.fullPrefix()}-${SemverFormatter.ofPattern("M.m.p'-'?P'+'?B").format(this)}"
     }
 
+    /**
+     * Use a custom pattern to return a version string. Useful when you want to use different formats
+     * for the same version, e.g., when Docker doesn't accept a "+" in a version tag and you want to use
+     * a dash in some places.
+     * @param withPattern
+     * @return
+     */
+    String toString(String withPattern) {
+        return "${this.fullPrefix()}-${SemverFormatter.ofPattern(withPattern).format(this)}"
+    }
+
     @NonCPS
     @Deprecated
     String artifactName() {
