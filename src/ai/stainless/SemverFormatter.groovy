@@ -76,7 +76,7 @@ class SemverFormatter {
 //                    println "${semver.prerelease}"
 //                    println "${!semver.prerelease?.empty}"
 //                    println "${!emptyOmit}"
-                    if (!buf.empty && semver.prerelease && !semver.prerelease?.empty) {
+                    if (!buf.isEmpty() && semver.prerelease && !semver.prerelease?.isEmpty()) {
                         // println "appending $buf"
                         template += buf
                         buf = ''
