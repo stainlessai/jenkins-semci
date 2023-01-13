@@ -1,6 +1,5 @@
 @Library('jenkins-semci')
 import ai.stainless.jenkins.ReleaseManager
-import ai.stainless.SemverFormatter
 
 def releaseManager = new ReleaseManager(this)
 
