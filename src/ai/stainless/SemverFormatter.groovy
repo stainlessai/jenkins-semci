@@ -62,7 +62,7 @@ class SemverFormatter {
                 else if (c == 'p') template += semver.patch
                 else if (c == 'B') {
 //                    println "in B with $buf"
-                    if (!buf.isEmpty() && semver.buildMetadata && !semver.buildMetadata?.isEmpty()) {
+                    if (!buf.isEmpty() && semver.buildMetadata && !semver.buildMetadata?.trim()?.equals('')) {
                         template += buf
                         buf = ''
                     }
@@ -76,7 +76,7 @@ class SemverFormatter {
 //                    println "${semver.prerelease}"
 //                    println "${!semver.prerelease?.empty}"
 //                    println "${!emptyOmit}"
-                    if (!buf.isEmpty() && semver.prerelease && !semver.prerelease?.isEmpty()) {
+                    if (!buf.isEmpty() && semver.prerelease && !semver.prerelease?.trim()?.equals('')) {
                         // println "appending $buf"
                         template += buf
                         buf = ''
