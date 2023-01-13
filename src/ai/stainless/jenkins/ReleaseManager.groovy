@@ -204,7 +204,7 @@ class ReleaseManager {
      * @param usePrefix - if the semver prefix is not null, use it as the artifact name. Otherwise, use the repo name.
      * @return
      */
-    private Semver artifact() {
+    public Semver artifact() {
         def semver = Semver.parse(buildSemanticVersion())
         def env = script.env
         if (!isMasterBranch()) {
@@ -247,6 +247,10 @@ class ReleaseManager {
 
     String artifactVersion() {
         return SemverFormatter.ofPattern("M.m.p'-'?P'+'?B").format(artifact())
+    }
+
+    String artifactVersion(String withPattern) {
+        return SemverFormatter.ofPattern(withPattern).format(artifact())
     }
 
     /**

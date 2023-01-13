@@ -175,6 +175,7 @@ Methods:
     ReleaseManager(def script)   // Constructor
     String artifactName()        // Returns the artifact name. Uses the semver prefix if exists, otherwise, the Jenkins JOB_NAME
     String artifactVersion()     // Returns the latest artifact version according to the GitHub branch and tag data
+    String artifactVersion(String withPattern)     // Returns the latest artifact version according to the GitHub branch and tag data using the specified pattern
 ```
           
 ## Customizing the ReleaseManager output
