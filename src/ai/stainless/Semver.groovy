@@ -141,7 +141,8 @@ class Semver implements Comparable<Semver> {
      * @param withPattern
      * @return
      */
-    String toString(String withPattern) {
+    @NonCPS
+    String toStringWithPattern(String withPattern) {
         return "${this.fullPrefix()}-${SemverFormatter.ofPattern(withPattern).format(this)}"
     }
 

@@ -100,7 +100,7 @@ Methods:
     int compareTo(Semver o)             // Implements Comparable against other semantic versions
     
     String toString()                   // Return a String representation of the object
-    String toString(String withPattern) // Return a String representation of the version using the specified pattern
+    String toStringWithPattern(String withPattern) // Return a String representation of the version using the specified pattern
 ```
 
 Calling toString() on this class will use a default formatter to render the Semver as a String. The default format is:
@@ -109,7 +109,7 @@ Calling toString() on this class will use a default formatter to render the Semv
 
 See SemverFormatter below for more details.
 
-There is also a toString(withPattern) variant that allows you to provide a custom pattern string at call time.
+There is also a toStringWithPattern(withPattern) variant that allows you to provide a custom pattern string at call time.
 
 ### ai.stainless.SemverFormatter
 
