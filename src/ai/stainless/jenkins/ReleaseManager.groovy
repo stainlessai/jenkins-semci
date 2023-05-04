@@ -142,7 +142,7 @@ class ReleaseManager {
 //        println "tags=${tags.tags}"
 //        println "lastTagSemverByTime=$lastTagSemverByTime"
 //        println "lastTagSemverByVersion=$lastTagSemverByVersion"
-//        println "releaseBranchSemver=$releaseBranchSemver"
+//        println "releaseBranchSemver=${releaseBranchSemver.versionString()}"
 //        println "releaseBranchVersion=$releaseBranchVersion"
 
         if (isMasterBranch()) {
@@ -161,7 +161,7 @@ class ReleaseManager {
                 throw new IllegalBranchNameException("Patch is not zero: ${getBranchName()}")
             // only bump patch if there is no patch tag > 0 on this branch
 //            println "diff=${releaseBranchVersion-lastTagSemverByVersion}"
-            if (lastTagSemverByTime && (releaseBranchVersion - lastTagSemverByVersion == 0))
+            if (lastTagSemverByTime && (releaseBranchVersion.compareTo(lastTagSemverByVersion) == 0))
                 releaseBranchVersion.bumpPatch()
             result = releaseBranchVersion
         } else {

@@ -257,3 +257,50 @@ try {
 }
 
 assert !thrown
+
+//
+// test 1.0.0
+//
+
+ReleaseManager.metaClass.getTags = {
+    return Tags.parse('''refs/tags/beakerx-notebook@0.9.0=9890f0b
+refs/tags/statfish-notebook@0.9.0=16227b7
+refs/tags/sfr-base-notebook@0.1.0=aff5e6b
+refs/tags/sfr-base-notebook@1.0.0=aff5e6b
+refs/tags/sfr-base-notebook@1.1.0=880f860
+refs/tags/sfr-base-notebook@1.2.0=f1e78a7
+refs/tags/beakerx2-base@0.0.1=e7ee5d9
+refs/tags/sfr-r-notebook@0.0.1=9b23988
+refs/tags/beakerx2-base@0.1.0=6f507c5
+refs/tags/sfr-base-notebook@2.0.0=999cf2d
+refs/tags/sfr-r-notebook@1.0.0=999cf2d
+refs/tags/statfish-base@0.5.0=e81efa1
+refs/tags/beakerx2-base@0.5.0=16dc4a5
+refs/tags/beakerx2-base@0.6.0=72bb63f
+refs/tags/statfish-base@0.6.0=a7313b4
+refs/tags/statfish-notebook@0.10.0=3a94f1b
+refs/tags/sfr-base@0.6.0=cd8f353
+refs/tags/sfr-base-notebook@2.1.0=cd8f353
+refs/tags/statfish-base@0.6.1=d508586
+refs/tags/sfr-base-notebook@2.1.1=d508586
+refs/tags/statfish-notebook@0.10.1=d508586
+refs/tags/statfish-auth-proxy@0.9.0=b78f86e
+refs/tags/statfish-auth-proxy@1.0.0=3e5953a
+refs/tags/statfish-base@0.7.0=7472271
+refs/tags/statfish-notebook@0.11.0=da22487
+refs/tags/sfr-base-notebook@2.2.0=da22487
+refs/tags/statfish-notebook@1.0.0=a4ecaf5
+refs/tags/sfr-base-notebook@2.3.0=a4ecaf5
+refs/tags/statfish-base@1.0.0=a4ecaf5
+''')
+}
+
+thrown = false
+try {
+    assert "1.1.0" == new ReleaseManager(new TestScript(BUILD_NUMBER: "21", JOB_NAME: "jobby", BRANCH_NAME: "develop"), "statfish-notebook").buildSemanticVersion()
+} catch (MissingTagException e) {
+    thrown = true
+    assert e.message =~ /^Prefix provided/
+}
+
+assert !thrown

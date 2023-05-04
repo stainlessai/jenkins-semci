@@ -2,6 +2,8 @@ package ai.stainless
 
 import com.cloudbees.groovy.cps.NonCPS
 
+import java.lang.module.ModuleDescriptor
+
 /**
  * Semantic version class that supports a prefix
  */
@@ -118,8 +120,7 @@ class Semver implements Comparable<Semver> {
 
     @NonCPS
     String fullPrefix() {
-        if (prefix && v && v == 'v') return "$prefix$prefixDelim"
-        else if (prefix) return "$prefix"
+        if (prefix) return "$prefix$prefixDelim"
         return ''
     }
 
@@ -131,7 +132,7 @@ class Semver implements Comparable<Semver> {
 
     @NonCPS
     String toString() {
-        return "${this.fullPrefix()}-${SemverFormatter.ofPattern("M.m.p'-'?P'+'?B").format(this)}"
+        return "${this.fullPrefix()}${SemverFormatter.ofPattern("M.m.p'-'?P'+'?B").format(this)}"
     }
 
     /**
@@ -149,7 +150,7 @@ class Semver implements Comparable<Semver> {
     @NonCPS
     @Deprecated
     String artifactName() {
-        return "${this.fullPrefix()}-${versionString()}"
+        return "${this.fullPrefix()}${versionString()}"
     }
 
     /**
@@ -172,13 +173,6 @@ class Semver implements Comparable<Semver> {
     @Override
     @NonCPS
     int compareTo(Semver o) {
-        if (!o) return 0;
-        return ((this.major - o.major) * 100) + ((this.minor - o.minor) * 10) + this.patch - o.patch
-    }
-
-    @NonCPS
-    int minus(Semver o) {
-        if (!o) return 0;
-        return ((this.major - o.major) * 100) + ((this.minor - o.minor) * 10) + this.patch - o.patch
+        return ModuleDescriptor.Version.parse(this.versionString()).compareTo(ModuleDescriptor.Version.parse(o.versionString()))
     }
 }

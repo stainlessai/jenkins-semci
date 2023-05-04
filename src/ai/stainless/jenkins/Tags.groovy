@@ -21,7 +21,9 @@ class Tags {
     static Tags parse(String tagOutput) {
         def tags = new Tags()
         tagOutput.splitEachLine("=") {
-            tags.tags.put(it[0], it[1])
+            if (it.size() == 2 && it[0] != null && it[1] != null) {
+                tags.tags.put(it[0], it[1])
+            }
         }
         return tags
     }
@@ -67,5 +69,10 @@ class Tags {
         }
         if (!results || results.size()==0) return null
         results
+    }
+
+    @NonCPS
+    def size() {
+        return tags.size()
     }
 }
