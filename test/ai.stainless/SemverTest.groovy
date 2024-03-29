@@ -34,10 +34,10 @@ println "---"
 def cmd = "git for-each-ref --sort=creatordate --format '%(refname)' refs/tags".execute()
 def out = new StringBuffer()
 def err = new StringBuffer()
-cmd.consumeProcessOutput( out, err )
+cmd.consumeProcessOutput(out, err)
 cmd.waitFor()
 def lines = out.readLines()
-println lines.collect { Semver.fromRef(it.replaceAll('\'',''),true) }.last().toMap()
+println lines.collect { Semver.fromRef(it.replaceAll('\'', ''), true) }.last().toMap()
 
 assert new Semver().versionString() == '0.1.0'
 assert new Semver(major: 3, minor: 2, patch: 1).versionString() == '3.2.1'
@@ -76,3 +76,21 @@ assert new Semver(major: 0, minor: 10, patch: 100).compareTo(new Semver(major: 0
 assert new Semver(major: 0, minor: 3, patch: 2).compareTo(new Semver(major: 0, minor: 10, patch: 100)) == -1
 
 assert new Semver(major: 1, minor: 0, patch: 0).compareTo(new Semver(major: 0, minor: 12, patch: 1)) == 1
+
+thrown = false
+try {
+    test("1.9")
+} catch (java.lang.IllegalArgumentException e) {
+    thrown = true
+}
+
+assert thrown
+
+thrown = false
+try {
+    test(".1.9.0")
+} catch (java.lang.IllegalArgumentException e) {
+    thrown = true
+}
+
+assert thrown

@@ -51,6 +51,3 @@ assert tags29.sortedByVersion()?.last()?.versionString() == '2.3.0'
 assert tags29.sortedByVersion('myproject_2')?.last()?.versionString() == '1.0.0'
 assert tags29.sortedByVersion('myproject_3')?.last()?.versionString() == '2.3.0'
 assert tags29.sortedByVersion('myproject_1')?.last()?.versionString() == '1.0.0'
-
-
-

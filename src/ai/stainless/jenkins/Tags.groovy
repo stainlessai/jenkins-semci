@@ -42,12 +42,18 @@ class Tags {
         def result = null
         if (tags.size() == 0) return result
         if (filter) {
-            result = tags.findAll { e -> e.key =~/refs\/tags\/${filter}/ }.collect { e -> Semver.fromRef(e.key.replaceAll('\'', ''), true).withObjectName(e.value) }
+            result = tags.findAll { e -> e.key =~ /refs\/tags\/${filter}/ }.collect { e -> Semver.fromRef(e.key.replaceAll('\'', ''), true).withObjectName(e.value) }
         } else {
-            result = tags.collect { e -> Semver.fromRef(e.key.replaceAll('\'', ''), true).withObjectName(e.value) }
+            result = tags.collect { e ->
+                try {
+                    Semver.fromRef(e.key.replaceAll('\'', ''), false).withObjectName(e.value)
+                } catch (Exception f) {
+                    print(f.getMessage())
+                }
+            }
         }
         // return null instead of empty list to avoid "cannot access last() from empty list exception"
-        if (result.size()==0) return null
+        if (result.size() == 0) return null
         result
     }
 
@@ -64,10 +70,10 @@ class Tags {
 
     @NonCPS
     def findAllByMajorAndMinorAndPrefixFilter(int major, int minor, String prefixFilter = null) {
-        def results = sortedByVersion(prefixFilter)?.findAll {
+        def results = sortedByVersion(prefixFilter)?.minus(null)?.findAll {
             it.major == major && it.minor == minor
         }
-        if (!results || results.size()==0) return null
+        if (!results || results.size() == 0) return null
         results
     }
 

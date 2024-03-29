@@ -304,3 +304,42 @@ try {
 }
 
 assert !thrown
+
+//
+// Test invalid tags
+//
+ReleaseManager.metaClass.getTags = {
+    return Tags.parse("v0.0=abcdef0\n")
+}
+
+ReleaseManager.metaClass.commitHash = {
+    return "abcdef0"
+}
+
+thrown = false
+try {
+    new ReleaseManager(new TestScript(BUILD_NUMBER: "21", JOB_NAME: "jobby", BRANCH_NAME: "master")).artifact()
+} catch (MissingTagException e) {
+    thrown = true
+    assert e.message =~ /^No version can be calculated/
+}
+
+assert thrown
+
+ReleaseManager.metaClass.getTags = {
+    return Tags.parse("v.0.0.1=abcdef0\n")
+}
+
+ReleaseManager.metaClass.commitHash = {
+    return "abcdef0"
+}
+
+thrown = false
+try {
+    new ReleaseManager(new TestScript(BUILD_NUMBER: "21", JOB_NAME: "jobby", BRANCH_NAME: "master")).artifact()
+} catch (MissingTagException e) {
+    thrown = true
+    assert e.message =~ /^No version can be calculated/
+}
+
+assert thrown

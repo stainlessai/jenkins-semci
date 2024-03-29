@@ -149,7 +149,7 @@ class ReleaseManager {
 //            println commitHash()
 //            println lastTagSemverByTime?.objectname
             if (commitHash() != lastTagSemverByTime?.objectname) {
-                throw new MissingTagException("No version can be calculated: branch ${getBranchName()} requires a version tag")
+                throw new MissingTagException("No version can be calculated: branch ${getBranchName()} requires a valid semantic version tag")
             }
 
             return lastTagSemverByTime.versionString()
