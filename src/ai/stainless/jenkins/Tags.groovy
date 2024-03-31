@@ -42,13 +42,19 @@ class Tags {
         def result = null
         if (tags.size() == 0) return result
         if (filter) {
-            result = tags.findAll { e -> e.key =~ /refs\/tags\/${filter}/ }.collect { e -> Semver.fromRef(e.key.replaceAll('\'', ''), true).withObjectName(e.value) }
+            result = tags.findAll { e ->
+                e.key =~ /refs\/tags\/${filter}/
+            }.collect { e ->
+                Semver.fromRef(e.key.replaceAll('\'', ''), true).withObjectName(e.value)
+            }
         } else {
             result = tags.collect { e ->
                 try {
                     Semver.fromRef(e.key.replaceAll('\'', ''), false).withObjectName(e.value)
                 } catch (Exception f) {
-                    print(f.getMessage())
+                    //
+                    // Ignore tags that can't be parsed
+                    //
                 }
             }
         }
