@@ -184,7 +184,9 @@ class ReleaseManager {
      * @return
      */
     private boolean checkReleaseBranch(String branchName) {
-        if (branchName == masterBranch) return false
+        if (isMasterBranch()) {
+            return false
+        }
         try {
             def semver = Semver.fromRef(branchName)
 //            println "isReleaseBranch($branchName)-> ${semver.toMap()}"
