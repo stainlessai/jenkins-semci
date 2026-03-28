@@ -5,11 +5,30 @@ import ai.stainless.SemverFormatter
 import ai.stainless.jenkins.ReleaseManager
 import ai.stainless.jenkins.Tags
 
+class MockCurrentBuild {
+    def description = null
+    def changeSets = []
+    def getBuildCauses(String causeClass) {
+        return []
+    }
+}
+
+class MockReplayBuild extends MockCurrentBuild {
+    def getBuildCauses(String causeClass) {
+        if (causeClass == 'org.jenkinsci.plugins.workflow.cps.replay.ReplayCause') {
+            return [['shortDescription': 'Replayed build']]
+        }
+        return []
+    }
+}
+
 class TestScript {
     public TestScript(Map env) {
         this.env = env
+        this.currentBuild = new MockCurrentBuild()
     }
     def env = [:]
+    def currentBuild
 
     def sh(Map params) {
         def cmd = params.script.execute()
@@ -342,4 +361,81 @@ try {
     assert e.message =~ /^No version can be calculated/
 }
 
+assert thrown
+
+//
+//
+// Test Jenkins Replay support
+//
+//
+
+// Replay on master: HEAD doesn't match tag, but version in description matches a valid tag
+ReleaseManager.metaClass.getTags = {
+    return Tags.parse("v1.2.3=aaa1111\nv1.3.0=bbb2222\n")
+}
+
+ReleaseManager.metaClass.commitHash = {
+    return "ccc3333" // HEAD has moved past the tag
+}
+
+def replayScript = new TestScript(BUILD_NUMBER: "30", JOB_NAME: "jobby", BRANCH_NAME: "master")
+replayScript.currentBuild = new MockReplayBuild()
+replayScript.currentBuild.description = "version=1.3.0"
+
+assert "1.3.0" == new ReleaseManager(replayScript).buildSemanticVersion()
+
+// Replay on master: version in description does NOT match any tag -> should throw
+ReleaseManager.metaClass.getTags = {
+    return Tags.parse("v1.2.3=aaa1111\n")
+}
+
+ReleaseManager.metaClass.commitHash = {
+    return "ccc3333"
+}
+
+replayScript = new TestScript(BUILD_NUMBER: "31", JOB_NAME: "jobby", BRANCH_NAME: "master")
+replayScript.currentBuild = new MockReplayBuild()
+replayScript.currentBuild.description = "version=9.9.9"
+
+thrown = false
+try {
+    new ReleaseManager(replayScript).buildSemanticVersion()
+} catch (MissingTagException e) {
+    thrown = true
+    assert e.message == "version cannot be determined"
+}
+assert thrown
+
+// Replay on master: no version in description -> should throw
+replayScript = new TestScript(BUILD_NUMBER: "32", JOB_NAME: "jobby", BRANCH_NAME: "master")
+replayScript.currentBuild = new MockReplayBuild()
+replayScript.currentBuild.description = "someotherkey=foo"
+
+thrown = false
+try {
+    new ReleaseManager(replayScript).buildSemanticVersion()
+} catch (MissingTagException e) {
+    thrown = true
+    assert e.message == "version cannot be determined"
+}
+assert thrown
+
+// NOT a replay, HEAD doesn't match tag -> should throw original error
+ReleaseManager.metaClass.getTags = {
+    return Tags.parse("v1.2.3=aaa1111\n")
+}
+
+ReleaseManager.metaClass.commitHash = {
+    return "ccc3333"
+}
+
+def nonReplayScript = new TestScript(BUILD_NUMBER: "33", JOB_NAME: "jobby", BRANCH_NAME: "master")
+
+thrown = false
+try {
+    new ReleaseManager(nonReplayScript).buildSemanticVersion()
+} catch (MissingTagException e) {
+    thrown = true
+    assert e.message =~ /^No version can be calculated/
+}
 assert thrown

@@ -149,6 +149,11 @@ class ReleaseManager {
 //            println commitHash()
 //            println lastTagSemverByTime?.objectname
             if (commitHash() != lastTagSemverByTime?.objectname) {
+                // HEAD doesn't match the latest tag -- check if this is a Replay
+                def replayVersion = getReplayVersion(tags)
+                if (replayVersion != null) {
+                    return replayVersion
+                }
                 throw new MissingTagException("No version can be calculated: branch ${getBranchName()} requires a valid semantic version tag")
             }
 
@@ -175,6 +180,41 @@ class ReleaseManager {
         if (!result) return new Semver().versionString()
         if (!result.major && !result.minor && !result.patch) result.bumpPatch()
         return result.versionString()
+    }
+
+    /**
+     * Check if this build is a Jenkins Replay and, if so, extract and validate the version
+     * from the original build's description. Returns the version string if valid, null otherwise.
+     */
+    private String getReplayVersion(Tags tags) {
+        def isReplay = script.currentBuild.getBuildCauses('org.jenkinsci.plugins.workflow.cps.replay.ReplayCause')?.size() > 0
+        if (!isReplay) return null
+
+        def description = script.currentBuild.description
+        if (!description) {
+            throw new MissingTagException("version cannot be determined")
+        }
+
+        // Parse version=x.y.z from the description's key=value pairs
+        def versionEntry = description.split(/[,\s]+/).find { it.trim().startsWith('version=') }
+        if (!versionEntry) {
+            throw new MissingTagException("version cannot be determined")
+        }
+
+        def versionStr = versionEntry.split('=', 2)[1]?.trim()
+        if (!versionStr) {
+            throw new MissingTagException("version cannot be determined")
+        }
+
+        // Validate that a tag with this version exists in the repo
+        def semverList = tags.toSemverList(prefixFilterRegex)
+        def matchingTag = semverList?.find { it.versionString() == versionStr }
+        if (!matchingTag) {
+            throw new MissingTagException("version cannot be determined")
+        }
+
+        script.echo "Replay detected: using version ${versionStr} from original build description"
+        return matchingTag.versionString()
     }
 
     /**

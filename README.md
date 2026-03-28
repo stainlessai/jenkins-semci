@@ -203,3 +203,44 @@ Methods:
     String artifactVersion()     // Returns the latest artifact version according to the GitHub branch and tag data
     String artifactVersion(String withPattern)     // Returns the latest artifact version according to the GitHub branch and tag data using the specified pattern
 ```
+
+### Jenkins Replay Support
+
+When using the Jenkins **Replay** feature on a master branch build, HEAD may no longer match the commit
+that was originally tagged. The ReleaseManager handles this by detecting the Replay and falling back to
+the version recorded in the original build's description.
+
+For this to work, your pipeline must set `currentBuild.description` to include a `version=X.Y.Z` key-value
+pair during the original build. For example:
+
+```groovy
+def version = releaseManager.buildSemanticVersion()
+currentBuild.description = "version=${version}"
+```
+
+When a Replay is detected:
+1. The `version=X.Y.Z` value is extracted from `currentBuild.description`
+2. That version is validated against existing tags in the repo
+3. If the tag exists, the version is returned as-is
+4. If the version is missing from the description or doesn't match any tag, a `MissingTagException` is thrown
+   with the message `"version cannot be determined"`
+
+# Running Tests
+
+Tests are Groovy scripts in `test/ai.stainless/`. They require the Groovy runtime (included in `lib/`)
+and the `com.cloudbees:groovy-cps` library (pulled via Maven).
+
+Run all tests:
+
+```bash
+./run-tests.sh
+```
+
+The script will automatically install the `groovy-cps` dependency via Maven if it isn't already present.
+
+To run a single test file manually:
+
+```bash
+java -cp "lib/*:$HOME/.m2/repository/com/cloudbees/groovy-cps/1.31/groovy-cps-1.31.jar:src:test/ai.stainless" \
+  groovy.ui.GroovyMain test/ai.stainless/ReleaseManagerTest.groovy
+```
